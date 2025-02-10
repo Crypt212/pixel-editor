@@ -32,7 +32,7 @@ To run the pixel editor locally, follow these steps:
 
 2. Navigate to the project directory:
     ```bash
-        cd pixel-editor 
+        cd pixel-editor
     ```
 
 3. Open `index.html` in your web browser.
@@ -40,10 +40,9 @@ To run the pixel editor locally, follow these steps:
 ## Run Testes
 
 To run the tests for pixel editor locally, follow these steps:
-
-    ```bash
-        npm test
-    ```
+```bash
+    npm test
+```
 
 ## License
 
