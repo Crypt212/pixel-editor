@@ -1,0 +1,97 @@
+#user-color {
+    align-self: end;
+    transform: scale(0.8);
+
+    width: 100%;
+    position: relative;
+    aspect-ratio: 1 / 1;
+    z-index: 100;
+}
+
+/* tablets */
+@media (min-width: 600px) and (max-width: 900px) {
+    #user-color {
+        translate: 0.5em -2.5em;
+    }
+
+}
+
+/* phones */
+@media (max-width: 600px) {
+}
+
+#user-color > .color-index {
+    border: 0.28em white solid;
+    box-shadow: 0.25em 0.25em #020202a2;
+    filter: brightness(0.7);
+
+    position: absolute;
+    aspect-ratio: 1 / 1;
+    width: 4em;
+    z-index: 0;
+
+    user-select: none;
+}
+
+#user-color > .swap-colors {
+    position: absolute;
+    top: -1.0em;
+    left: 5.0em;
+    aspect-ratio: 1 / 1;
+    width: 1.5em;
+    z-index: 0;
+
+    background-color: green;
+    box-shadow: 0.25em 0.25em #020202a2;
+
+    user-select: none;
+}
+
+#user-color > .reset-colors {
+    position: absolute;
+    left: -1.0em;
+    top: 5.0em;
+    aspect-ratio: 1 / 1;
+    width: 1.5em;
+    z-index: 0;
+
+    background-color: green;
+    box-shadow: 0.25em 0.25em #020202a2;
+
+    user-select: none;
+}
+
+#user-color > .color-index.primary {
+    top: 0;
+    left: 0;
+}
+
+#user-color > .color-index.secondary {
+    top: 1.5em;
+    left: 1.5em;
+}
+
+
+#user-color > .color-index.selected {
+    z-index: 1;
+
+    box-shadow: 0.3em 0.3em #020202a2;
+    outline: 0.28em #fff7 dashed;
+    outline-offset: -0.84em;
+    filter: brightness(1);
+
+    transform: scale(1.2);
+}
+
+#user-color > .add-color {
+    position: absolute;
+    top: 36%;
+    left: 85%;
+    aspect-ratio: 1 / 1;
+    width: 13%;
+
+    background-color: red;
+    outline: 0.28em #fff7 dashed;
+
+    transform: scale(1.2);
+}

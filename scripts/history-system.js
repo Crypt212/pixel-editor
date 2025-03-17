@@ -1,3 +1,9 @@
+import {validateNumber} from "./validation.js";
+
+/**
+ * Represents a history system to store, undo, redo action data.
+ * @class
+ */
 class HistorySystem {
     #buffer;
     #currentIndex = -1;
@@ -6,22 +12,38 @@ class HistorySystem {
     #actionGroupIDCounter = -1;
 
     /**
-     * Represents a history system to store, undo, redo action data.
+     * Creates a history system with specified capacity
      * @constructor
      * @param {number} capacity - The max size of the history buffer (range from 1 to 64)
+     * @throws {Error} Throws an error if capacity is not an integer between 1 and 64
      */
     constructor(capacity) {
-        if (capacity === undefined) throw new Error("Capacity must be defined");
-
-        if (!Number.isInteger(capacity) || !Number.isFinite(capacity))
-            throw new Error("Capacity must be a finite integer number");
-
-        if (!(1 <= capacity && capacity <= 64))
-            throw new Error("Capacity must be between 1 and 64 inclusive");
+        validateNumber(capacity, "Capacity", {start: 1, end: 64, integerOnly: true});
 
         capacity = Math.floor(capacity);
         this.#buffer = new Array(capacity);
     }
+
+    /**
+     * Creates a copy of a history system object
+     * @method
+     */
+    //copy() {
+    //    const copyHistory = new HistorySystem();
+    //    copyHistory.#currentIndex = this.#currentIndex;
+    //    copyHistory.#startIndex = this.#startIndex;
+    //    copyHistory.#endIndex = this.#endIndex;
+    //    copyHistory.#actionGroupIDCounter = this.#actionGroupIDCounter;
+    //    this.#buffer.forEach(elm => {
+    //        if (typeof elm === "object" && elm !== null) {
+    //            if (Array.isArray(elm))
+    //                copyHistory.#buffer.push([...elm]);
+    //            else copyHistory.#buffer.push({...elm});
+    //        } else copyHistory.#buffer.push(elm);
+    //    });
+    //    return copyHistory;
+    //}
+
 
     /**
      * Addes action group with given name and incremental ID to the action buffer
@@ -31,7 +53,7 @@ class HistorySystem {
      */
     addActionGroup(actionGroupName = "") {
         if (typeof actionGroupName !== "string")
-            throw new Error("Action group name must be string");
+            throw new TypeError("Action group name must be string");
 
         if (this.getBufferSize === this.getBufferCapacity) {
             this.#startIndex = (this.#startIndex + 1) % this.getBufferCapacity;
@@ -80,8 +102,7 @@ class HistorySystem {
      * @throws {Error} Throws an error if offset is not an integer number
      */
     #getActionGroup(offset = 0) {
-        if (!Number.isInteger(offset) || !Number.isFinite(offset))
-            throw new Error("Offset must be a finite integer number");
+        validateNumber(offset, "Offset", {integerOnly: true});
 
         let check;
         let index = this.#currentIndex;

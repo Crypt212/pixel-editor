@@ -4,26 +4,100 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./styles/table.css" />
+    <link rel="stylesheet" href="./styles/generics.css" />
+    <link rel="stylesheet" href="./styles/layout.css" />
+    <link rel="stylesheet" href="./styles/canvas.css" />
+    <link rel="stylesheet" href="./styles/tools.css" />
+    <link rel="stylesheet" href="./styles/color-palette.css" />
+    <link rel="stylesheet" href="./styles/selected-colors.css" />
     <title>Document</title>
 </head>
 
 <body>
+    <header>
+        <div id="download-png">download</div>
+        <div id="undo">undo</div>
+        <div id="redo">redo</div>
+    </header>
     <main>
-        <aside id="tools">
-            <div class="item-1"></div>
-            <div class="item-2"></div>
-            <div class="item-3"></div>
-            <div class="item-4"></div>
-            <div class="item-5"></div>
-            <div class="item-6"></div>
+        <aside id="aside-left">
+            <div class="tools">
+                <div class="pen btn">
+                    <i class="icon fa-solid fa-pen"></i>
+                </div>
+                <div class="eraser btn">
+                    <i class="icon fa-solid fa-eraser"></i>
+                </div>
+                <div class="bucket btn">
+                    <i class="icon fa-solid fa-fill-drip"></i>
+                </div>
+                <div class="line btn">
+                    <i class="icon fa-solid fa-minus"></i>
+                </div>
+                <div class="eye-dropper btn">
+                    <i class="icon fa-solid fa-eye-dropper"></i>
+                </div>
+                <div class="select btn">
+                    <i class="icon fa-solid fa-vector-square"></i>
+                </div>
+                <div class="magic-wand btn">
+                    <i class="icon fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+            </div>
+            <div id="user-color">
+                <div class="swap-colors btn">&lt;-&gt;</div>
+                <div style="background-color: red;" class="color-index primary selected btn"></div>
+                <div style="background-color: blue;" class="color-index secondary btn"></div>
+                <div class="reset-colors btn">reset</div>
+            </div>
         </aside>
-        <div class="container">
-            <table id="canvas"></table>
+        <div id="canvas-creator">
+            <canvas id="canvas-image" class="draw-board"></canvas>
         </div>
-        <aside id="colors"></aside>
+        <div id="canvas-container">
+            <table id="canvas-bg" class="draw-board"></table>
+            <table id="canvas-image" class="draw-board"></table>
+        </div>
+        <aside id="aside-right">
+            <div class="tabs">
+                <div class="tab colors"><span>colors</span></div>
+            </div>
+            <div class="groups">
+                <div class="group colors">
+                    <div class="color-palette">
+                        <div class="palette-container">
+                            <div class="color add-color btn">
+                                <i class="icon fa-sharp fa-solid fa-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!--<div class="color-maker">-->
+                    <!--    <div class="slider">-->
+                    <!--        <span>red</span>-->
+                    <!--        <input type="range" min="0" max="255" class="color-slider red" />-->
+                    <!--    </div>-->
+                    <!--    <div class="slider">-->
+                    <!--        <span>green</span>-->
+                    <!--        <input type="range" min="0" max="255" class="color-slider green" />-->
+                    <!--    </div>-->
+                    <!--    <div class="slider">-->
+                    <!--        <span>blue</span>-->
+                    <!--        <input type="range" min="0" max="255" class="color-slider blue" />-->
+                    <!--    </div>-->
+                    <!--</div>-->
+                </div>
+            </div>
+        </aside>
     </main>
-    <script src="./scripts/main.js"></script>
+    <footer></footer>
+    <canvas id="canvas"></canvas>
+    <script src="https://kit.fontawesome.com/49a4002261.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
+    <script type="module" src="./scripts/validation.js"></script>
+    <script type="module" src="./scripts/canvas-data.js"></script>
+    <script type="module" src="./scripts/history-system.js"></script>
+    <script type="module" src="./scripts/pixel-board.js"></script>
+    <script type="module" src="./scripts/main.js"></script>
 </body>
 
 </html>

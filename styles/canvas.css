@@ -1,0 +1,26 @@
+#canvas-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    background-color: var(--black);
+    align-items: center;
+    width: 100%;
+    overflow: hidden;
+}
+
+.draw-board {
+    user-select: none;
+    position: absolute;
+    border-collapse: collapse;
+    border: 0.2em var(--white) solid;
+}
+
+.draw-board td {
+    user-select: none;
+    width: 5px;
+    aspect-ratio: 1 / 1;
+}
+
+canvas {
+    image-rendering: pixelated;
+}

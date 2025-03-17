@@ -1,0 +1,47 @@
+.tools {
+    display: grid; 
+    grid-gap: 0.6em;
+
+    max-height: 60vh;
+    padding: 0.25em;
+    padding-bottom: 0.7em;
+
+    overflow: true;
+    user-select: none;
+    border-bottom: 5px var(--darker-white) solid;
+}
+
+/* wider than tablets */
+@media (min-width: 900px) {
+    .tools {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* tablets */
+@media (min-width: 600px) and (max-width: 900px) {
+    .tools {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+}
+
+.tools > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background-color: var(--white);
+    border: 0.18em var(--white) solid;
+    box-shadow: 0.25em 0.25em var(--shadow);
+    
+    aspect-ratio: 1 / 1;
+    width: 2.5em;
+    
+    overflow: hidden;
+    user-select: none;
+}
+
+.tools > div > * {
+    font-size: 1.3em;
+}
