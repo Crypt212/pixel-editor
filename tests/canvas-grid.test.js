@@ -1,6 +1,6 @@
-import CanvasData from "../scripts/canvas-data.js";
+import CanvasGrid from "../scripts/canvas-grid.js";
 
-describe("CanvasData", () => {
+describe("CanvasGrid", () => {
     let assertDimentions;
     let cd;
     beforeEach(() => {
@@ -11,39 +11,39 @@ describe("CanvasData", () => {
     });
     describe("Construction", () => {
         test("should construct with (width, height) default values of (1, 1) if not given", () => {
-            expect(() => (cd = new CanvasData())).not.toThrow();
+            expect(() => (cd = new CanvasGrid())).not.toThrow();
             assertDimentions(1, 1);
-            expect(() => (cd = new CanvasData(3))).not.toThrow();
+            expect(() => (cd = new CanvasGrid(3))).not.toThrow();
             assertDimentions(3, 1);
-            expect(() => (cd = new CanvasData(undefined, 3))).not.toThrow();
+            expect(() => (cd = new CanvasGrid(undefined, 3))).not.toThrow();
             assertDimentions(1, 3);
         });
         test("should throw an error if (width, height) values are not defined, not integers or not in range [1, 1024]", () => {
-            expect(() => new CanvasData("a")).toThrow(
+            expect(() => new CanvasGrid("a")).toThrow(
                 TypeError("Width must be defined finite number"),
             );
-            expect(() => new CanvasData(undefined, "1")).toThrow(
+            expect(() => new CanvasGrid(undefined, "1")).toThrow(
                 TypeError("Height must be defined finite number"),
             );
-            expect(() => new CanvasData(1, "1")).toThrow(
+            expect(() => new CanvasGrid(1, "1")).toThrow(
                 TypeError("Height must be defined finite number"),
             );
-            expect(() => new CanvasData([], 1)).toThrow(
+            expect(() => new CanvasGrid([], 1)).toThrow(
                 TypeError("Width must be defined finite number"),
             );
-            expect(() => new CanvasData(0, 1024)).toThrow(
+            expect(() => new CanvasGrid(0, 1024)).toThrow(
                 RangeError(`Width must have:
 Minimum of: 1
 Maximum of: 1024
 `),
             );
-            expect(() => new CanvasData(2, -1)).toThrow(
+            expect(() => new CanvasGrid(2, -1)).toThrow(
                 RangeError(`Height must have:
 Minimum of: 1
 Maximum of: 1024
 `),
             );
-            expect(() => new CanvasData(4, 2024)).toThrow(
+            expect(() => new CanvasGrid(4, 2024)).toThrow(
                 RangeError(`Height must have:
 Minimum of: 1
 Maximum of: 1024
@@ -51,7 +51,7 @@ Maximum of: 1024
             );
         });
         test("should construct a canvas with specified width and height and initialize it with transparent pixel data", () => {
-            expect(() => (cd = new CanvasData(2, 54))).not.toThrow();
+            expect(() => (cd = new CanvasGrid(2, 54))).not.toThrow();
             assertDimentions(2, 54);
             expect(() => cd.getColor(2, 54)).toThrow(
                 RangeError(`x must have:
@@ -78,7 +78,7 @@ Maximum of: 53
     describe("Functionality", () => {
         let cd;
         beforeEach(() => {
-            cd = new CanvasData(16, 16);
+            cd = new CanvasGrid(16, 16);
         });
 
         beforeAll(() => {

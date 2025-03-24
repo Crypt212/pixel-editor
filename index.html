@@ -34,7 +34,7 @@
                 <div class="line btn">
                     <i class="icon fa-solid fa-minus"></i>
                 </div>
-                <div class="eye-dropper btn">
+                <div class="color-picker btn">
                     <i class="icon fa-solid fa-eye-dropper"></i>
                 </div>
                 <div class="select btn">
@@ -52,11 +52,9 @@
             </div>
         </aside>
         <div id="canvas-creator">
-            <canvas id="canvas-image" class="draw-board"></canvas>
+            <!--<canvas id="canvas-image" class="draw-board"></canvas>-->
         </div>
         <div id="canvas-container">
-            <table id="canvas-bg" class="draw-board"></table>
-            <table id="canvas-image" class="draw-board"></table>
         </div>
         <aside id="aside-right">
             <div class="tabs">
@@ -90,12 +88,16 @@
         </aside>
     </main>
     <footer></footer>
-    <canvas id="canvas"></canvas>
     <script src="https://kit.fontawesome.com/49a4002261.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
     <script type="module" src="./scripts/validation.js"></script>
-    <script type="module" src="./scripts/canvas-data.js"></script>
+    <script type="module" src="./scripts/canvas-grid.js"></script>
     <script type="module" src="./scripts/history-system.js"></script>
+    <script type="module" src="./scripts/layer-system.js"></script>
+    <script type="module" src="./scripts/canvas-manager.js"></script>
+    <script type="module" src="./scripts/drawing-manager.js"></script>
+    <script type="module" src="./scripts/tool-manager.js"></script>
+    <script type="module" src="./scripts/event-manager.js"></script>
     <script type="module" src="./scripts/pixel-board.js"></script>
     <script type="module" src="./scripts/main.js"></script>
 </body>

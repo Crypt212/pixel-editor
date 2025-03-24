@@ -143,7 +143,7 @@ class HistorySystem {
     /**
      * Retrieves action group ID at an offset from current selected group
      * @method
-     * @param {number} offset - The the offset from the current group for which ID gets returned
+     * @param {number} [offset=0] - The the offset from the current group for which ID gets returned
      * @returns {number} The action group ID, or -1 if not in range.
      */
     getActionGroupID(offset = 0) {
@@ -155,7 +155,7 @@ class HistorySystem {
     /**
      * Retrieves action group name at an offset from current selected group
      * @method
-     * @param {number} offset - The the offset from the current group for which name gets returned
+     * @param {number} [offset=0] - The the offset from the current group for which name gets returned
      * @returns {string | number} The action group name, or -1 if not in range.
      */
     getActionGroupName(offset = 0) {
@@ -167,7 +167,7 @@ class HistorySystem {
     /**
      * Retrieves action group data at an offset from current selected group
      * @method
-     * @param {number} offset - The the offset from the current group for which data gets returned
+     * @param {number} [offset=0] - The the offset from the current group for which data gets returned
      * @returns {Array | number} An array containing the action group data, or -1 if not in range
      */
     getActionData(offset = 0) {

@@ -2,7 +2,9 @@
   "devDependencies": {
     "@babel/preset-env": "^7.26.8",
     "@babel/register": "^7.25.9",
-    "jest": "^29.7.0"
+    "canvas": "^2.11.2",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
   },
   "name": "pixeleditor",
   "version": "1.0.0",
@@ -207,7 +209,9 @@
     "collectCoverageFrom": [
       "**/*.js"
     ],
-    "setupFilesAfterEnv": ["./tests/setup-jest.js"]
+    "setupFilesAfterEnv": [
+      "./tests/setup-jest.js"
+    ]
   },
   "keywords": [],
   "author": "",

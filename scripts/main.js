@@ -1,72 +1,35 @@
 import PixelBoard from "./pixel-board.js";
-import Tool from "./tool.js";
 
 const toolsElem = document.getElementsByClassName("tools")[0];
 
-const colorPalette = [
-    "#9f9f9f",
-    "#5a5a5a",
-    "#ee0f0f",
-    "#2121da",
-    "#11ee11",
-    "#9f9f9f",
-    "#5a5a5a",
-    "#ee0f0f",
-    "#2121da",
-    "#9f9f9f",
-    "#5a5a5a",
-    "#ee0f0f",
-    "#2121da",
-    "#9f9f9f",
-    "#5a5a5a",
-    "#ee0f0f",
-    "#2121da",
-    "#9f9f9f",
-    "#5a5a5a",
-    "#ee0f0f",
-    "#2121da",
-    "#9f9f9f",
-    "#5a5a5a",
-    "#ee0f0f",
-    "#2121da",
-    "#9f9f9f",
-    "#5a5a5a",
-    "#ee0f0f",
-    "#2121da",
-    "#9f9f9f",
-    "#5a5a5a",
-    "#ee0f0f",
-    "#2121da",
-    "#9f9f9f",
-    "#5a5a5a",
-    "#ee0f0f",
-    "#2121da",
-    "#9f9f9f",
-    "#5a5a5a",
-    "#ee0f0f",
-    "#2121da",
-];
+const colorPalette = [];
+for (let i = 0; i < 10; i++) {
+    let color = "";
+    for (let j = 0; j < 6; j++) {
+        let rand = Math.floor(Math.random() * 16);
+        if (rand <= 9) rand = String(rand);
+        else rand = String.fromCharCode('a'.charCodeAt(0) + rand - 10);
+        color += rand;
+    }
+    colorPalette.push(`#${color}`);
+}
 
 const colorsList = document.getElementsByClassName("palette-container")[0];
-colorPalette.forEach(s);
+colorPalette.forEach(addColor);
 
-function s(color) {
+function addColor(color) {
     let element = document.createElement("div");
     element.classList.add("color");
     element.classList.add("btn");
     element.style.backgroundColor = color;
     element.addEventListener("click", (event) => {
         document.querySelector(".color-index.selected").style.backgroundColor =
-            Tool.drawColor = event.target.style.backgroundColor;
+            event.target.style.backgroundColor;
+        board.toolManager.setDrawingColor(
+            event.target.style.backgroundColor,
+        );
     });
     colorsList.appendChild(element);
-}
-
-for (let elm of toolsElem.children) {
-    elm.addEventListener("click", () => {
-        console.log(elm.classList[0]);
-        Tool.name = elm.classList[0];
-    });
 }
 
 function drawToCanvas(matrix) {
@@ -93,6 +56,10 @@ function downloadCanvasAsPNG() {
     link.click();
 }
 
+const board = new PixelBoard(document.getElementById("canvas-container"));
+board.createBlankBoard(64, 64);
+board.render();
+
 document.getElementById("download-png").addEventListener("click", () => {
     drawToCanvas(canvas.colorsMatrix);
     downloadCanvasAsPNG();
@@ -104,7 +71,7 @@ document.querySelectorAll(".color-index").forEach((elm) => {
             .querySelectorAll(".color-index")
             .forEach((e) => e.classList.remove("selected"));
         elm.classList.add("selected");
-        Tool.drawColor = elm.style.backgroundColor;
+        board.toolManager.setDrawingColor(elm.style.backgroundColor);
     });
 });
 
@@ -120,11 +87,13 @@ document
         if (primary.classList.contains("selected")) {
             primary.classList.remove("selected");
             secondary.classList.add("selected");
-            Tool.drawColor = secondary.style.backgroundColor;
+            board.toolManager.setDrawingColor(
+                secondary.style.backgroundColor,
+            );
         } else {
             secondary.classList.remove("selected");
             primary.classList.add("selected");
-            Tool.drawColor = primary.style.backgroundColor;
+            board.toolManager.setDrawingColor(primary.style.backgroundColor);
         }
     });
 
@@ -140,28 +109,32 @@ document
         secondary.classList.remove("primary");
         secondary.classList.add("secondary");
         secondary.classList.remove("selected");
-        Tool.drawColor = primary.style.backgroundColor;
+        board.toolManager.setDrawingColor(primary.style.backgroundColor);
     });
 
-async function pickColor() {
-    let eyeDropper = new EyeDropper();
-    try {
-        let pickedColor = await eyeDropper.open();
-        primaryColorSelector.style.background = pickedColor.sRGBHex;
-    } catch (error) {
-        console.log("error");
-    }
-}
-
-const board = new PixelBoard(document.getElementById("canvas-container"));
-board.createBlankBoard(32, 32);
-board.render();
-
-document.getElementById('undo').addEventListener('click', () => {
+document.getElementById("undo").addEventListener("click", () => {
     board.undo();
 });
 
-document.getElementById('redo').addEventListener('click', () => {
+document.getElementById("redo").addEventListener("click", () => {
     board.redo();
 });
 
+for (let elm of toolsElem.children) {
+    //if (elm.classList[0] === "color-picker")
+    //    elm.addEventListener("click", () => {
+    //        let eyeDropper = new EyeDropper();
+    //        try {
+    //            let pickedColor = await eyeDropper.open();
+    //            primaryColorSelector.style.background = pickedColor.sRGBHex;
+    //        } catch (error) {
+    //            console.log("error");
+    //        }
+    //        console.log(elm.classList[0]);
+    //    });
+    //else
+        elm.addEventListener("click", () => {
+            console.log(elm.classList[0]);
+            board.toolManager.toolName = elm.classList[0];
+        });
+}

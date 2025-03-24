@@ -1,14 +1,14 @@
 import { validateNumber, validateColorArray } from "./validation.js";
 
 /**
- * Represents a canvas in pixel drawing system
+ * Represents a canvas grid system
  * @class
  */
-class CanvasData {
+class CanvasGrid {
     #width;
     #height;
     #pixelMatrix;
-    #lastAction;
+    #lastActions;
 
     /**
      * Creates a blank canvas with specified width and height
@@ -30,30 +30,9 @@ class CanvasData {
         });
         this.#width = width;
         this.#height = height;
-        this.#lastAction = [];
+        this.#lastActions = [];
         this.initializeBlankCanvas(width, height);
     }
-
-    ///**
-    // * Creates a copy of a canvas data object
-    // * @method
-    // */
-    //copy() {
-    //    const copyCanvas = new CanvasData();
-    //    copyCanvas.#width = this.#width;
-    //    copyCanvas.#height = this.#height;
-    //    this.#pixelMatrix.forEach(elm => {
-    //        copyCanvas.#pixelMatrix.push([...elm]);
-    //    });
-    //    this.#lastAction.forEach(elm => {
-    //        copyCanvas.#lastAction.push({
-    //            x: elm.x,
-    //            y: elm.y,
-    //            color: [... elm.color],
-    //        });
-    //    });
-    //    return copyCanvas;
-    //}
 
     /**
      * Initializes the canvas with a blank grid of transparent pixel data
@@ -126,9 +105,12 @@ class CanvasData {
     /**
      * Resets last taken actions array to be empty
      * @method
+     * @returns last taken actions
      */
     resetLastActions() {
-        this.#lastAction = [];
+        let lastActions = this.#lastActions;
+        this.#lastActions = [];
+        return lastActions;
     }
 
     /**
@@ -139,7 +121,7 @@ class CanvasData {
      * @param {number} y - The y position.
      * @param {[number, number, number, number]} color - An array containing color data [red, green, blue, alpha].
      * @param {Object} An object containing additional options.
-     * @param {boolean} [options.quietly=false] - If set to true, the pixel data at which color changed will not be pushed to the lastActions array.
+     * @param {boolean} [options.quietly=false] - If set to true, the pixel data at which color changed will not be pushed to the lastActionss array.
      * @param {boolean} [options.validate=true] - If set to true, the x, y, and color types are validated.
      * @throws {Error} if validate is true and if x and y are not valid integers in valid range.
      * @throws {Error} if validate is true and if color is not the valid array form [r, g, b, a] where r, g, b are between 0 and 255, and a is between 0 and 1.
@@ -154,14 +136,15 @@ class CanvasData {
         // consider all colors with alpha 0 as the same color [transparent black]
         color = color[3] === 0 ? [0, 0, 0, 0] : color;
 
-        this.#pixelMatrix[y][x].color = color;
         if (!quietly) {
-            this.#lastAction.push({
+            this.#lastActions.push({
                 x: x,
                 y: y,
-                color: [...color],
+                colorOld: this.#pixelMatrix[y][x].color,
+                colorNew: color,
             });
         }
+        this.#pixelMatrix[y][x].color = color;
     }
 
     /**
@@ -190,18 +173,18 @@ class CanvasData {
     }
 
     /**
-     * Returns last edited pixel positions with the new colors in an array [[x1, y1, c1], [x2, y2, c2] ...]
+     * Returns last edited pixel positions with the new colors in an array 
      * @method
-     * @returns {Array}
+     * @returns {Array} An array containing the x, y and color of each lastly edited pixel [{x: x1, y: y1, color: c1}, {x: x2, y: y2, color: c2} ...]
      */
     get getLastActions() {
-        return this.#lastAction;
+        return this.#lastActions;
     }
 
     /**
-     * Returns the wdith of the canvas
+     * Returns the width of the canvas
      * @method
-     * @returns {number}
+     * @returns {number} The width of the canvas
      */
     get getWidth() {
         return this.#width;
@@ -210,11 +193,11 @@ class CanvasData {
     /**
      * Returns the height of the canvas
      * @method
-     * @returns {number}
+     * @returns {number} The height of the canvas
      */
     get getHeight() {
         return this.#height;
     }
 }
 
-export default CanvasData;
+export default CanvasGrid;
