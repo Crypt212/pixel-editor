@@ -106,7 +106,7 @@ class ToolManager {
                 //this.render(this.#drawingManager.preview(pixelPosition));
                 break;
             case "mouseup":
-                this.render(this.#drawingManager.action(pixelPosition));
+                //this.render(this.#drawingManager.action(pixelPosition));
                 // ended action
                 this.#drawingManager.endAction();
                 break;

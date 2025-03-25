@@ -12,25 +12,31 @@ class EventManager {
         let canvasElement = this.#canvasManager.getCanvas;
         let containerElement = this.#canvasManager.getContainer;
 
-        ["touchstart", "mousedown"].forEach((eventName) => {
+        ["mousedown", "touchstart"].forEach((eventName) => {
             containerElement.addEventListener(eventName, (event) => {
                 event.preventDefault();
                 this.#isMouseDown = true;
 
                 const clientX = event.clientX || event.touches[0].clientX;
                 const clientY = event.clientY || event.touches[0].clientY;
+                console.log(eventName);
+                console.log(event.touches);
+                console.log(event.changedTouches);
 
                 this.#toolManager.use("mousedown", clientX, clientY);
             });
         });
 
-        ["touchcancel", "mouseup"].forEach((eventName) => {
+        ["mouseup", "touchend", "touchcancel"].forEach((eventName) => {
             document.addEventListener(eventName, (event) => {
                 event.preventDefault();
                 this.#isMouseDown = false;
 
-                const clientX = event.clientX || event.touches[0].clientX;
-                const clientY = event.clientY || event.touches[0].clientX;
+                const clientX = event.clientX || event.changedTouches[0].clientX;
+                const clientY = event.clientY || event.changedTouches[0].clientX;
+                console.log(eventName);
+                console.log(event.touches);
+                console.log(event.changedTouches);
 
                 this.#toolManager.use("mouseup", clientX, clientY);
             });
@@ -40,8 +46,11 @@ class EventManager {
             document.addEventListener(eventName, (event) => {
                 event.preventDefault();
 
-                const clientX = event.clientX || event.touches[0].clientX;
-                const clientY = event.clientY || event.touches[0].clientY;
+                const clientX = event.clientX || event.changedTouches[0].clientX;
+                const clientY = event.clientY || event.changedTouches[0].clientY;
+                console.log(eventName);
+                console.log(event.touches);
+                console.log(event.changedTouches);
 
                 if (this.#isMouseDown)
                     this.#toolManager.use("mousedraw", clientX, clientY);
