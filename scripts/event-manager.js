@@ -12,26 +12,49 @@ class EventManager {
         let canvasElement = this.#canvasManager.getCanvas;
         let containerElement = this.#canvasManager.getContainer;
 
-        containerElement.addEventListener("mousedown", (event) => {
-            event.preventDefault();
-            this.#isMouseDown = true;
-            this.#toolManager.use("mousedown", event.clientX, event.clientY);
-        });
+        ["ontouchstart", "mousedown"]
+            .forEach((eventName) => {
+                containerElement.addEventListener(eventName, (event) => {
+                    event.preventDefault();
+                    this.#isMouseDown = true;
+                    this.#toolManager.use(
+                        "mousedown",
+                        event.clientX,
+                        event.clientY,
+                    );
+                });
+            });
 
-        document.addEventListener("mouseup", (event) => {
-            event.preventDefault();
-            this.#isMouseDown = false;
-            this.#toolManager.use("mouseup", event.clientX, event.clientY);
+        ["ontouchcancel", "mouseup"].forEach((eventName) => {
+            document.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                this.#isMouseDown = false;
+                this.#toolManager.use(
+                    "mouseup",
+                    event.clientX,
+                    event.clientY,
+                );
+            });
         });
 
         canvasElement.addEventListener("mouseleave", (event) => { });
 
-        document.addEventListener("mousemove", (event) => {
-            event.preventDefault();
-            if (this.#isMouseDown)
-                this.#toolManager.use("mousedraw", event.clientX, event.clientY);
-            else
-                this.#toolManager.use("mousehover", event.clientX, event.clientY);
+        ["mousemove", "ontouchmove"].forEach((eventName) => {
+            document.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                if (this.#isMouseDown)
+                    this.#toolManager.use(
+                        "mousedraw",
+                        event.clientX,
+                        event.clientY,
+                    );
+                else
+                    this.#toolManager.use(
+                        "mousehover",
+                        event.clientX,
+                        event.clientY,
+                    );
+            });
         });
 
         // scroll effect
