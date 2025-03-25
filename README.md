@@ -1,5 +1,6 @@
-# Pixel Editor
-**(https://crypt212.github.io/pixel-editor/)**
+# Pixel Editor  
+**[🚀 Live Demo](https://crypt212.github.io/pixel-editor/)**
+
 A simple pixel editor web application that allows users to create and edit pixel art using a grid-based interface. This application is under development.
 
 ## Table of Contents
