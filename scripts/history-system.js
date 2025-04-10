@@ -1,4 +1,4 @@
-import {validateNumber} from "./validation.js";
+import { validateNumber } from "./validation.js";
 
 /**
  * Represents a history system to store, undo, redo action data.

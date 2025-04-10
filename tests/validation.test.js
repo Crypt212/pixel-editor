@@ -1,14 +1,26 @@
 import { validateColorArray, validateNumber } from "../scripts/validation.js";
 
 describe("validateNumber", () => {
-    test("Should pass if the condition is true", () => {
-        expect(() => validateNumber(2, "variable")).not.toThrow();
-        expect(() => validateNumber(2.4, "variable")).not.toThrow();
-        expect(() => validateNumber(5, "variable", {integerOnly: true})).not.toThrow();
-        expect(() => validateNumber(2, "variable", {integerOnly: true, start: 1})).not.toThrow();
-        expect(() => validateNumber(3, "variable", {integerOnly: true, end: 4.1})).not.toThrow();
-        expect(() => validateNumber(-3.5, "variable", {start: -5, end: 4.1})).not.toThrow();
-    });
+    test([
+        [2, "variable", undefined, undefined, undefined],
+        [2.4, "variable", undefined, undefined, undefined],
+        [2.4, "variable", undefined, undefined, false],
+        [5, "variable", undefined, undefined, true],
+        [2, "variable", 1, undefined, true],
+        [3, "variable", undefined, 4.1, undefined],
+        [-3.3, "variable", -5, 4.1, undefined],
+    ])(
+        "Should pass if the condition is true",
+        (value, name, start, end, integerOnly) => {
+            expect(() =>
+                validateNumber(value, name, {
+                    start: start,
+                    end: end,
+                    integerOnly: integerOnly,
+                }),
+            ).not.toThrow();
+        },
+    );
     test("Should throw a type error if function parameters are of invalid type", () => {
         expect(() => validateNumber(2, "variable", { end: {} })).toThrow(
             "Variable name or options are of invalid type",
@@ -73,58 +85,56 @@ describe("validateColorArray", () => {
 
     test("Should throw a type error if color is not an array of size 4", () => {
         expect(() => validateColorArray("variable")).toThrow(
-            "Color must be in array"
+            "Color must be in array",
         );
         expect(() => validateColorArray(true)).toThrow(
-            "Color must be in array"
+            "Color must be in array",
         );
-        expect(() => validateColorArray(2)).toThrow(
-            "Color must be in array"
-        );
+        expect(() => validateColorArray(2)).toThrow("Color must be in array");
         expect(() => validateColorArray([])).toThrow(
-            "Color must be in array containing 4 finite numbers"
+            "Color must be in array containing 4 finite numbers",
         );
-        expect(() => validateColorArray([2, 54, 'a'])).toThrow(
-            "Color must be in array containing 4 finite numbers"
+        expect(() => validateColorArray([2, 54, "a"])).toThrow(
+            "Color must be in array containing 4 finite numbers",
         );
-        expect(() => validateColorArray([2, {}, [], 54, 'a'])).toThrow(
-            "Color must be in array containing 4 finite numbers"
+        expect(() => validateColorArray([2, {}, [], 54, "a"])).toThrow(
+            "Color must be in array containing 4 finite numbers",
         );
     });
 
     test("Should throw a type error if the entries of the color array are not numbers", () => {
         expect(() => validateColorArray([2, {}, [], 54])).toThrow(
-            "Color must be in array containing 4 finite numbers"
+            "Color must be in array containing 4 finite numbers",
         );
-        expect(() => validateColorArray(['a', 2, 8, 1])).toThrow(
-            "Color must be in array containing 4 finite numbers"
+        expect(() => validateColorArray(["a", 2, 8, 1])).toThrow(
+            "Color must be in array containing 4 finite numbers",
         );
-        expect(() => validateColorArray([2, 'a', 8, 1])).toThrow(
-            "Color must be in array containing 4 finite numbers"
+        expect(() => validateColorArray([2, "a", 8, 1])).toThrow(
+            "Color must be in array containing 4 finite numbers",
         );
-        expect(() => validateColorArray([2, 8, 'a', 1])).toThrow(
-            "Color must be in array containing 4 finite numbers"
+        expect(() => validateColorArray([2, 8, "a", 1])).toThrow(
+            "Color must be in array containing 4 finite numbers",
         );
-        expect(() => validateColorArray([2, 8, 1, 'a'])).toThrow(
-            "Color must be in array containing 4 finite numbers"
+        expect(() => validateColorArray([2, 8, 1, "a"])).toThrow(
+            "Color must be in array containing 4 finite numbers",
         );
     });
 
     test("Should throw a range error if first three entries are not between 0 and 255, the the fourth is between 0 and 1", () => {
         expect(() => validateColorArray([2, 8, 1, 4])).toThrow(
-            "Color alpha value (at index 3) must be between 0 and 1 inclusive"
+            "Color alpha value (at index 3) must be between 0 and 1 inclusive",
         );
         expect(() => validateColorArray([2, 8, 1, -4])).toThrow(
-            "Color alpha value (at index 3) must be between 0 and 1 inclusive"
+            "Color alpha value (at index 3) must be between 0 and 1 inclusive",
         );
         expect(() => validateColorArray([-2, 8, 1, 0.4])).toThrow(
-"Color rgb values (at indices 0, 1, 2) must be between 0 and 255 inclusive"
+            "Color rgb values (at indices 0, 1, 2) must be between 0 and 255 inclusive",
         );
         expect(() => validateColorArray([2, 428, 1, 0.4])).toThrow(
-"Color rgb values (at indices 0, 1, 2) must be between 0 and 255 inclusive"
+            "Color rgb values (at indices 0, 1, 2) must be between 0 and 255 inclusive",
         );
         expect(() => validateColorArray([2, 1, 428, 0.4])).toThrow(
-"Color rgb values (at indices 0, 1, 2) must be between 0 and 255 inclusive"
+            "Color rgb values (at indices 0, 1, 2) must be between 0 and 255 inclusive",
         );
     });
 });

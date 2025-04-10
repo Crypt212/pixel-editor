@@ -4,6 +4,8 @@ import DrawingManager from "./drawing-manager.js";
 import CanvasManager from "./canvas-manager.js";
 import EventManager from "./event-manager.js";
 import ToolManager from "./tool-manager.js";
+import DirtyRectangle from "./dirty-rectangle.js";
+import Color from "./color.js";
 
 /*
  * Responsible for managing events and functionalities of the canvas element inside its container
@@ -85,7 +87,7 @@ class PixelBoard {
     }
 
     render() {
-        this.canvasManager.render(this.layerSystem.getRenderImage(this.canvasManager.getCanvasContext));
+        this.canvasManager.render(this.layerSystem.getRenderImage());
     }
 }
 

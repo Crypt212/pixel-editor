@@ -5,6 +5,7 @@
  * @throws {TypeError} Throws an error if the color is invalid.
  */
 export function validateColorArray(color) {
+    console.warn("Deprecated - use new Color() instead");
     if (!Array.isArray(color) || color.length !== 4) {
         throw new TypeError(
             "Color must be in array containing 4 finite numbers",
@@ -38,11 +39,11 @@ export function validateColorArray(color) {
 /**
  * Validates the number to be valid number between start and end inclusive.
  * @param {number} number - The number to validate.
+ * @param {String} varName - The variable name to show in the error message which will be thrown.
  * @param {Object} Contains some optional constraints: max/min limits, and if the number is integer only
  * @param {number | undefined} start - The minimum of valid range, set to null to omit the constraint.
  * @param {number | undefined} end - The maximum of valid range, set to null to omit the constraint.
  * @param {boolean} integerOnly - Specifies if the number must be an integer.
- * @param {String} varName - The variable name to show in the error message which will be thrown.
  * @throws {TypeError} Throws an error if the number type, name type or options types is invalid.
  * @throws {TypeError} Throws an error if start and end are set but start is higher than end.
  * @throws {RangeError} Throws an error if the number is not in the specified range.

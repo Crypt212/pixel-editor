@@ -122,11 +122,7 @@ class ToolManager {
         this.#canvasManager.render(
             this.#layerSystem.getRenderImage(
                 this.#canvasManager.getCanvasContext,
-                toRender.dimensions.x0,
-                toRender.dimensions.y0,
-                toRender.dimensions.x1,
-                toRender.dimensions.y1,
-                toRender.pixelPositions,
+                toRender,
             ),
             toRender.dimensions.x0,
             toRender.dimensions.y0,

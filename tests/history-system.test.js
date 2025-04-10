@@ -2,86 +2,56 @@ import HistorySystem from "../scripts/history-system.js";
 
 describe("HistorySystem", () => {
     let hs;
-    describe("Construction", () => {
-        test("should throw an error when capacity is not defined finite integer", () => {
-            expect(() => new HistorySystem()).toThrow(
-                "Capacity must be defined",
-            );
-
-            expect(() => new HistorySystem([])).toThrow(
-                "Capacity must be defined finite number"
-            );
-            expect(() => new HistorySystem(false)).toThrow(
-                "Capacity must be defined finite number"
-            );
-
-            expect(() => new HistorySystem(Infinity)).toThrow(
-                "Capacity must be defined finite number"
-            );
-            expect(() => new HistorySystem(NaN)).toThrow(
-                "Capacity must be defined finite number"
-            );
-
-            expect(() => new HistorySystem(0.8)).toThrow(
-                "Capacity must be integer"
-            );
-            expect(() => new HistorySystem(13.001)).toThrow(
-                "Capacity must be integer"
-            );
+    describe([
+        [undefined, TypeError],
+        [null, TypeError],
+        [[], TypeError],
+        ["5", TypeError],
+        [NaN, TypeError],
+        [Infinity, TypeError],
+        [13.01, TypeError]
+    ])("", (input, error) => {
+        test(`should throw ${error.name} when capacity is ${input}(not defined finite integer)`, () => {
+            expect(() => new HistorySystem(input)).toThrow(error);
         });
+    });
 
-        test("should throw an error when capacity is not between 1 and 64", () => {
-            expect(() => new HistorySystem(-20)).toThrow(
-`Capacity must have:
-Minimum of: 1
-Maximum of: 64
-`
-            );
-            expect(() => new HistorySystem(0)).toThrow(
-`Capacity must have:
-Minimum of: 1
-Maximum of: 64
-`
-            );
-            expect(() => new HistorySystem(100)).toThrow(
-`Capacity must have:
-Minimum of: 1
-Maximum of: 64
-`
-            );
+    describe([
+        [-20, RangeError],
+        [0, RangeError],
+        [100, RangeError],
+    ])("", (input, error) => {
+        test(`should throw ${error.name} when capacity is ${input}(not between 1 and 64)`, () => {
+            expect(() => new HistorySystem(input)).toThrow(error);
         });
+    });
 
-        test("should return capacity of buffer when calling getBufferCapacity", () => {
-            hs = new HistorySystem(1);
-            expect(hs.getBufferCapacity).toBe(1);
-
-            hs = new HistorySystem(20);
-            expect(hs.getBufferCapacity).toBe(20);
-
-            hs = new HistorySystem(64);
-            expect(hs.getBufferCapacity).toBe(64);
+    describe.each([1, 20, 64])("", (input) => {
+        test(`should return capacity of buffer when calling getBufferCapacity`, () => {
+            hs = new HistorySystem(input);
+            expect(hs.getBufferCapacity).toBe(input);
         });
     });
 
     describe("Functionality", () => {
         let hs;
         let assertGroup;
+        assertGroup = function(
+            offset,
+            expectedID = null,
+            expectedName = null,
+            expectedData = null,
+        ) {
+            if (expectedID !== null)
+                expect(hs.getActionGroupID(offset)).toBe(expectedID);
+            if (expectedName !== null)
+                expect(hs.getActionGroupName(offset)).toBe(expectedName);
+            if (expectedData !== null) {
+                expect(hs.getActionData(offset)).toStrictEqual(expectedData);
+                expect(hs.getActionData(offset)).not.toBe(expectedData);
+            }
+        };
         beforeEach(() => {
-            assertGroup = function(
-                offset,
-                expectedID = null,
-                expectedName = null,
-                expectedData = null,
-            ) {
-                if (expectedID !== null)
-                    expect(hs.getActionGroupID(offset)).toBe(expectedID);
-                if (expectedName !== null)
-                    expect(hs.getActionGroupName(offset)).toBe(expectedName);
-                if (expectedData !== null) {
-                    expect(hs.getActionData(offset)).toStrictEqual(expectedData);
-                    expect(hs.getActionData(offset)).not.toBe(expectedData);
-                }
-            };
             hs = new HistorySystem(5);
         });
 
@@ -351,10 +321,7 @@ Maximum of: 64
                 toTest("aah", "Offset must be defined finite number");
                 toTest(["aah"], "Offset must be defined finite number");
                 toTest([3], "Offset must be defined finite number");
-                toTest(
-                    { a: 3, b: 4 },
-                    "Offset must be defined finite number",
-                );
+                toTest({ a: 3, b: 4 }, "Offset must be defined finite number");
             });
         });
     });

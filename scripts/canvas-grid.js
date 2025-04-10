@@ -1,4 +1,6 @@
-import { validateNumber, validateColorArray } from "./validation.js";
+import { validateNumber } from "./validation.js";
+import DirtyRectangle from "./dirty-rectangle.js";
+import Color from "./color.js";
 
 /**
  * Represents a canvas grid system
@@ -8,7 +10,7 @@ class CanvasGrid {
     #width;
     #height;
     #pixelMatrix;
-    #lastActions;
+    #lastActions = new DirtyRectangle({ stateType: Color });
 
     /**
      * Creates a blank canvas with specified width and height
@@ -30,7 +32,7 @@ class CanvasGrid {
         });
         this.#width = width;
         this.#height = height;
-        this.#lastActions = [];
+        this.#lastActions = new DirtyRectangle({ stateType: Color });
         this.initializeBlankCanvas(width, height);
     }
 
@@ -54,7 +56,7 @@ class CanvasGrid {
                 this.#pixelMatrix[i].push({
                     x: j,
                     y: i,
-                    color: [0, 0, 0, 0],
+                    color: Color.TRANSPARENT,
                 });
             }
         }
@@ -97,7 +99,7 @@ class CanvasGrid {
                 let blue = Number(imageData.data[dist + 2]);
                 let alpha = Number(imageData.data[dist + 3]);
 
-                this.setColor(j, i, [red, green, blue, alpha]);
+                this.setColor(j, i, Color([red, green, blue, alpha]));
             }
         }
     }
@@ -109,39 +111,40 @@ class CanvasGrid {
      */
     resetLastActions() {
         let lastActions = this.#lastActions;
-        this.#lastActions = [];
+        this.#lastActions = new DirtyRectangle({ stateType: Color });
         return lastActions;
     }
 
     /**
      * Sets color to pixel at position (x, y).
-     * If the color alpha channel is 0, then set rgba to [0, 0, 0, 0] to represent transparency.
      * @method
      * @param {number} x - The x position.
      * @param {number} y - The y position.
-     * @param {[number, number, number, number]} color - An array containing color data [red, green, blue, alpha].
+     * @param {Color} color - The Color object to be set
      * @param {Object} An object containing additional options.
      * @param {boolean} [options.quietly=false] - If set to true, the pixel data at which color changed will not be pushed to the lastActionss array.
      * @param {boolean} [options.validate=true] - If set to true, the x, y, and color types are validated.
      * @throws {Error} if validate is true and if x and y are not valid integers in valid range.
-     * @throws {Error} if validate is true and if color is not the valid array form [r, g, b, a] where r, g, b are between 0 and 255, and a is between 0 and 1.
+     * @throws {Error} if validate is true and if color is not a valid Color object
      */
     setColor(x, y, color, { quietly = false, validate = true } = {}) {
         if (validate) {
             validateNumber(x, "x", {start: 0, end: this.#width - 1,  integerOnly: true});
             validateNumber(y, "y", {start: 0, end: this.#height - 1, integerOnly: true});
-            validateColorArray(color);
+            if (!(color instanceof Color)) {
+                throw new Error("color must be object of Color class");
+            }
         }
 
         // consider all colors with alpha 0 as the same color [transparent black]
-        color = color[3] === 0 ? [0, 0, 0, 0] : color;
+        color = color[3] === 0 ? Color.TRANSPARENT : color;
 
         if (!quietly) {
-            this.#lastActions.push({
+            this.#lastActions.addChange({
                 x: x,
                 y: y,
-                colorOld: this.#pixelMatrix[y][x].color,
                 colorNew: color,
+                colorOld: this.#pixelMatrix[y][x].color,
             });
         }
         this.#pixelMatrix[y][x].color = color;
@@ -166,7 +169,7 @@ class CanvasGrid {
      * @method
      * @param {number} x
      * @param {number} y
-     * @param {[number, number, number, number]} An array containing color data [red, green, blue, alpha]
+     * @returns {Color} A Color object
      */
     getColor(x, y) {
         return this.get(x, y).color;
@@ -177,8 +180,12 @@ class CanvasGrid {
      * @method
      * @returns {Array} An array containing the x, y and color of each lastly edited pixel [{x: x1, y: y1, color: c1}, {x: x2, y: y2, color: c2} ...]
      */
-    get getLastActions() {
-        return this.#lastActions;
+    get lastActions() {
+        return this.#lastActions.getAfterStates().map(change => ({
+            x: change.x,
+            y: change.y,
+            color: change.state
+        }));
     }
 
     /**
@@ -186,7 +193,7 @@ class CanvasGrid {
      * @method
      * @returns {number} The width of the canvas
      */
-    get getWidth() {
+    get width() {
         return this.#width;
     }
 
@@ -195,7 +202,7 @@ class CanvasGrid {
      * @method
      * @returns {number} The height of the canvas
      */
-    get getHeight() {
+    get height() {
         return this.#height;
     }
 }

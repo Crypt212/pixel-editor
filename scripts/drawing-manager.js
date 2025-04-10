@@ -1,5 +1,6 @@
 import LayerSystem from "./layer-system.js";
 import { validateNumber, validateColorArray } from "./validation.js";
+import DirtyRectangle from "./dirty-rectangle.js";
 
 /**
  * Contains graphics methods to draw on layers managed by a layer manager class
@@ -12,27 +13,11 @@ class DrawingManager {
     #recentPixel = null;
     #isActionStart = false;
     #toolName;
+
     #metaData;
-    #recentBuffer = {
-        pixelPositions: [],
-        dimensions: {
-            // dirty rectangle
-            x0: Infinity,
-            y0: Infinity,
-            x1: -Infinity,
-            y1: -Infinity,
-        },
-    };
-    #currentBuffer = {
-        pixelPositions: [],
-        dimensions: {
-            // dirty rectangle
-            x0: Infinity,
-            y0: Infinity,
-            x1: -Infinity,
-            y1: -Infinity,
-        },
-    };
+
+    #recentRect = new DirtyRectangle();
+    #currentRect = new DirtyRectangle();
 
     /**
      * Sets a specific layer manager class for which the layers will be drawn on
@@ -76,36 +61,12 @@ class DrawingManager {
                 .getLayerCanvas()
                 .setColor(x, y, newColor, { validate: false });
 
-            this.#currentBuffer.dimensions.x0 = Math.min(
-                this.#currentBuffer.dimensions.x0,
-                x,
-            );
-            this.#currentBuffer.dimensions.y0 = Math.min(
-                this.#currentBuffer.dimensions.y0,
-                y,
-            );
-            this.#currentBuffer.dimensions.x1 = Math.max(
-                this.#currentBuffer.dimensions.x1,
-                x,
-            );
-            this.#currentBuffer.dimensions.y1 = Math.max(
-                this.#currentBuffer.dimensions.y1,
-                y,
-            );
-            this.#currentBuffer.pixelPositions.push({ x: x, y: y });
+            this.#currentRect.pushPixel(x, y);
         };
 
         const history = this.#layerSystem.getLayerHistory();
 
-        let toRender = {
-            pixelPositions: [],
-            dimensions: {
-                x0: Infinity,
-                y0: Infinity,
-                x1: -Infinity,
-                y1: -Infinity,
-            },
-        };
+        let toRender = new DirtyRectangle();
 
         if (this.#startPixel === null && !this.#isActionStart) {
             // did not start action yet
@@ -146,7 +107,7 @@ class DrawingManager {
 
                     this.#layerSystem.addToHistory();
                 }
-                this.copyBuffer(this.#currentBuffer, toRender);
+                toRender.copy(this.#currentRect);
                 break;
             case "bucket":
                 if (this.#isActionStart) {
@@ -159,7 +120,7 @@ class DrawingManager {
                         pixelOperation,
                     );
                     this.#layerSystem.addToHistory();
-                    this.copyBuffer(this.#currentBuffer, toRender);
+                    toRender.copy(this.#currentRect);
                 }
                 break;
             case "line":
@@ -178,18 +139,18 @@ class DrawingManager {
                 this.#layerSystem.addToHistory();
 
                 if (this.#isActionStart) {
-                    this.addBuffer(this.#recentBuffer, toRender);
-                    this.addBuffer(this.#currentBuffer, toRender);
-                    this.setBuffer(this.#currentBuffer, this.#recentBuffer);
+                    toRender.add(this.#recentRect);
+                    toRender.add(this.#currentRect);
+                    this.#recentRect.set(this.#currentRect);
                 } else {
-                    this.copyBuffer(this.#recentBuffer, toRender);
-                    this.addBuffer(this.#currentBuffer, toRender);
-                    this.setBuffer(this.#currentBuffer, this.#recentBuffer);
+                    toRender.copy(this.#recentRect);
+                    toRender.add(this.#currentRect);
+                    this.#recentRect.set(this.#currentRect);
                 }
                 break;
         }
 
-        this.resetBuffer(this.#currentBuffer);
+        this.resetBuffer(this.#currentRect);
         this.#recentPixel = { x: pixelPosition.x, y: pixelPosition.y };
         this.#isActionStart = false;
 
@@ -198,23 +159,23 @@ class DrawingManager {
 
     //preview(pixelPosition) {
     //    const pixelOperation = (x, y) => {
-    //        this.#currentBuffer.dimensions.x0 = Math.min(
-    //            this.#currentBuffer.dimensions.x0,
+    //        this.#currentRect.dimensions.x0 = Math.min(
+    //            this.#currentRect.dimensions.x0,
     //            x,
     //        );
-    //        this.#currentBuffer.dimensions.y0 = Math.min(
-    //            this.#currentBuffer.dimensions.y0,
+    //        this.#currentRect.dimensions.y0 = Math.min(
+    //            this.#currentRect.dimensions.y0,
     //            y,
     //        );
-    //        this.#currentBuffer.dimensions.x1 = Math.max(
-    //            this.#currentBuffer.dimensions.x1,
+    //        this.#currentRect.dimensions.x1 = Math.max(
+    //            this.#currentRect.dimensions.x1,
     //            x,
     //        );
-    //        this.#currentBuffer.dimensions.y1 = Math.max(
-    //            this.#currentBuffer.dimensions.y1,
+    //        this.#currentRect.dimensions.y1 = Math.max(
+    //            this.#currentRect.dimensions.y1,
     //            y,
     //        );
-    //        this.#currentBuffer.pixelPositions.push({ x: x, y: y });
+    //        this.#currentRect.pixelPositions.push({ x: x, y: y });
     //    };
     //
     //    let toRender = {
@@ -258,7 +219,7 @@ class DrawingManager {
     //
     //                this.#layerSystem.addToHistory();
     //            }
-    //            this.copyBuffer(this.#currentBuffer, toRender);
+    //            this.copyBuffer(this.#currentRect, toRender);
     //            break;
     //        case "bucket":
     //            this.setUsedColor(this.#drawColor);
@@ -272,7 +233,7 @@ class DrawingManager {
     //                    pixelOperation,
     //                );
     //                this.#layerSystem.addToHistory();
-    //                this.copyBuffer(this.#currentBuffer, toRender);
+    //                this.copyBuffer(this.#currentRect, toRender);
     //            }
     //            break;
     //        /*
@@ -297,18 +258,18 @@ class DrawingManager {
     //            this.#layerSystem.addToHistory();
     //
     //            if (this.#isActionStart) {
-    //                this.addBuffer(this.#recentBuffer, toRender);
-    //                this.addBuffer(this.#currentBuffer, toRender);
-    //                this.setBuffer(this.#currentBuffer, this.#recentBuffer);
+    //                this.addBuffer(this.#recentRect, toRender);
+    //                this.addBuffer(this.#currentRect, toRender);
+    //                this.setBuffer(this.#currentRect, this.#recentRect);
     //            } else {
-    //                this.copyBuffer(this.#recentBuffer, toRender);
-    //                this.addBuffer(this.#currentBuffer, toRender);
-    //                this.setBuffer(this.#currentBuffer, this.#recentBuffer);
+    //                this.copyBuffer(this.#recentRect, toRender);
+    //                this.addBuffer(this.#currentRect, toRender);
+    //                this.setBuffer(this.#currentRect, this.#recentRect);
     //            }
     //            break;
     //    }
     //
-    //    this.resetBuffer(this.#currentBuffer);
+    //    this.resetBuffer(this.#currentRect);
     //    this.#recentPixel = { x: pixelPosition.x, y: pixelPosition.y };
     //    this.#isActionStart = false;
     //
@@ -373,8 +334,8 @@ class DrawingManager {
         this.#isActionStart = false;
         if (this.#layerSystem.getLayerHistory().getActionData().length === 0)
             this.#layerSystem.undo(); // action does nothing, remove it
-        this.resetBuffer(this.#currentBuffer);
-        this.resetBuffer(this.#recentBuffer);
+        this.resetBuffer(this.#currentRect);
+        this.resetBuffer(this.#recentRect);
     }
 
     /**

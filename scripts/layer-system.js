@@ -1,6 +1,8 @@
 import HistorySystem from "./history-system.js";
 import CanvasGrid from "./canvas-grid.js";
-import { validateNumber, validateColorArray } from "./validation.js";
+import DirtyRectangle from "./dirty-rectangle.js";
+import { validateNumber } from "./validation.js";
+import Color from "./color.js";
 
 /**
  * Represents a system for managing layers of canvas grids
@@ -11,8 +13,8 @@ class LayerSystem {
     #selectedIndex = -1;
     #width = 0;
     #height = 0;
-    #darkBG = [160, 160, 160, 1];
-    #lightBG = [217, 217, 217, 1];
+    #darkBG = new Color([160, 160, 160, 1]);
+    #lightBG = new Color([217, 217, 217, 1]);
 
     /**
      * Represents a system for managing layers of canvas
@@ -39,6 +41,7 @@ class LayerSystem {
     /**
      * Retrieves a layer object from layers list
      * Retrieves a layer object from layers list at given index, if given -1 then Retrieves the layer at the selected index. Returns null if index is set to -1 and no layer selected
+     * @method
      * @param {number} [index=-1] - The index of the layer in the layer list
      * @returns {Object} - Layer object containing the name, canvas data and history system of the layer, or null
      * @throws {TypeError} throws an error if the index is not integer
@@ -51,7 +54,7 @@ class LayerSystem {
 
         validateNumber(index, "Index", {
             start: -1,
-            end: this.getSize - 1,
+            end: this.size - 1,
             integerOnly: true,
         });
 
@@ -64,6 +67,7 @@ class LayerSystem {
     /**
      * Removes a layer objects from layers list at the given index, if index is -1, it removes at the selected index, does nothing if nothing is selected and index is -1
      * @param {number} [index=-1] - The index of the layer in the layer list, will take the selected index if -1 given
+     * @method
      * @throws {TypeError} throws an error if the index is not integer
      * @throws {RangeError} throws an error if the layer list is empty
      * @throws {RangeError} throws an error if the index is out of valid range
@@ -74,7 +78,7 @@ class LayerSystem {
 
         validateNumber(index, "Index", {
             start: -1,
-            end: this.getSize - 1,
+            end: this.size - 1,
             integerOnly: true,
         });
 
@@ -89,6 +93,7 @@ class LayerSystem {
 
     /**
      * Addes a new layer object to the layers list
+     * @method
      * @param {string} name - The name of the layer to be added
      * @throws {TypeError} throws an error if the name is not string
      */
@@ -105,6 +110,7 @@ class LayerSystem {
 
     /**
      * Selects a layer objects from layers list
+     * @method
      * @param {number} index - The index of the layer in the layer list
      * @throws {TypeError} throws an error if the index is not integer
      * @throws {RangeError} throws an error if the layer list is empty
@@ -114,9 +120,10 @@ class LayerSystem {
         if (this.#layerList.length === 0)
             throw new RangeError("No layers to select");
 
+        console.log(index);
         validateNumber(index, "Index", {
             start: 0,
-            end: this.getSize - 1,
+            end: this.size - 1,
             integerOnly: true,
         });
 
@@ -125,6 +132,7 @@ class LayerSystem {
 
     /**
      * Changes the position of a layer in the layer list
+     * @method
      * @param {number} currentIndex - The index of the layer in the layer list
      * @param {number} newIndex - The index to change to in the layer list
      * @throws {TypeError} throws an error if the currentIndex or newIndex is not integer
@@ -136,12 +144,12 @@ class LayerSystem {
 
         validateNumber(currentIndex, "Current index", {
             start: 0,
-            end: this.getSize - 1,
+            end: this.size - 1,
             integerOnly: true,
         });
         validateNumber(newIndex, "New index", {
             start: 0,
-            end: this.getSize - 1,
+            end: this.size - 1,
             integerOnly: true,
         });
 
@@ -165,81 +173,79 @@ class LayerSystem {
         }
     }
 
+    /**
+     * returns 
+     * @method
+     * @param {} context - 
+     * throws {TypeError} if
+     */
     getRenderImage(
-        context,
-        x0 = 0,
-        y0 = 0,
-        x1 = this.getWidth,
-        y1 = this.getHeight,
-        positionsArray = null,
+        dirtyRectangle = new DirtyRectangle({ stateType: Color }),
     ) {
         const calculateColor = (x, y) => {
             validateNumber(x, "x");
             validateNumber(y, "y");
 
-            let finalColor = [...((x + y) % 2 ? this.#lightBG : this.#darkBG)];
+            let finalRGB = [...((x + y) % 2 ? this.#lightBG : this.#darkBG).rgb];
+            let finalAlpha = 1;
 
-            for (let i = 0; i < this.getSize; i++) {
-                const canvas = this.getLayerCanvas(i);
-                const layerColor = [...canvas.getColor(x, y)];
+            for (let i = 0; i < this.size; i++) {
+                const layerRGB = this.getLayerCanvas(i).getColor(x, y).rgb;
+                const layerAlpha = this.getLayerCanvas(i).getColor(x, y).alpha;
 
-                // color[0] : red
-                // color[1] : green
-                // color[2] : blue
-                // color[3] : alpha
-
-                const finalAlpha =
-                    layerColor[3] + finalColor[3] * (1 - layerColor[3]);
+                const resultAlpha =
+                    layerAlpha + finalAlpha * (1 - layerAlpha);
                 for (
                     let k = 0;
                     k < 3;
                     k++ // rgb values
                 )
-                    finalColor[k] =
-                        (layerColor[k] * layerColor[3] +
-                            finalColor[k] *
-                            finalColor[3] *
-                            (1 - layerColor[3])) /
-                        finalAlpha;
+                    finalRGB[k] =
+                        (layerRGB[k] * layerAlpha +
+                            finalRGB[k] *
+                            finalAlpha *
+                            (1 - layerAlpha)) /
+                        resultAlpha;
 
-                finalColor[3] = finalAlpha; // alpha value
+                finalAlpha = resultAlpha; // alpha value
             }
 
-            return finalColor;
+            return new Color([...finalRGB, finalAlpha]);
         };
 
         if (this.#selectedIndex === -1) return;
 
-        if (!Array.isArray(positionsArray) && positionsArray !== null)
+        if (!(dirtyRectangle instanceof DirtyRectangle))
             throw new TypeError();
 
-        const renderImage = context.getImageData(
-            x0,
-            y0,
-            x1 - x0 + 1,
-            y1 - y0 + 1,
-        );
+        const renderImage = (dirtyRectangle.isEmpty ?
+            new ImageData(this.width, this.height) :
+            new ImageData(
+                dirtyRectangle.bounds.x1 - dirtyRectangle.bounds.x0 + 1,
+                dirtyRectangle.bounds.y1 - dirtyRectangle.bounds.y0 + 1,
+            ));
 
-        if (positionsArray === null) {
-            for (let y = y0; y < y1; y++)
-                for (let x = x0; x < x1; x++) {
+
+        if (!dirtyRectangle.isEmpty)
+            for (let y = 0; y < dirtyRectangle.bounds.y1 - dirtyRectangle.bounds.y0; y++)
+                for (let x = 0; x < dirtyRectangle.bounds.x1 - dirtyRectangle.bounds.x0; x++) {
                     const index = (y * renderImage.width + x) * 4;
                     const color = calculateColor(x, y);
-                    renderImage.data[index] = color[0];
-                    renderImage.data[index + 1] = color[1];
-                    renderImage.data[index + 2] = color[2];
-                    renderImage.data[index + 3] = Math.floor(color[3] * 255);
+                    renderImage.data[index + 0] = color.rgb[0];
+                    renderImage.data[index + 1] = color.rgb[1];
+                    renderImage.data[index + 2] = color.rgb[2];
+                    renderImage.data[index + 3] = Math.floor(color.alpha * 255);
                 }
-        } else
-            for (let pixel of positionsArray) {
-                let x = pixel.x - x0;
-                let y = pixel.y - y0;
+        else
+            for (let pixel of dirtyRectangle.changes) {
+                let x = pixel.x - dirtyRectangle.bounds.x0;
+                let y = pixel.y - dirtyRectangle.bounds.y0;
                 const index = (y * renderImage.width + x) * 4;
                 const color = calculateColor(pixel.x, pixel.y);
-                renderImage.data[index] = color[0];
-                renderImage.data[index + 1] = color[1];
-                renderImage.data[index + 2] = color[2];
-                renderImage.data[index + 3] = Math.floor(color[3] * 255);
+                renderImage.data[index + 0] = color.rgb[0];
+                renderImage.data[index + 1] = color.rgb[1];
+                renderImage.data[index + 2] = color.rgb[2];
+                renderImage.data[index + 3] = Math.floor(color.alpha[3] * 255);
             }
 
         return renderImage;
@@ -248,7 +254,7 @@ class LayerSystem {
     addToHistory(index = -1) {
         const layer = this.#getLayer(index);
         if (layer === null) return null;
-        layer.canvasGrid.getLastActions.forEach((action) =>
+        layer.canvasGrid.lastActions.forEach((action) =>
             layer.historySystem.addActionData(action),
         );
         layer.canvasGrid.resetLastActions();
@@ -294,7 +300,7 @@ class LayerSystem {
 
         validateNumber(index, "Index", {
             start: -1,
-            end: this.getSize - 1,
+            end: this.size - 1,
             integerOnly: true,
         });
 
@@ -305,10 +311,8 @@ class LayerSystem {
     }
 
     setBackgroundColors(lightBG, darkBG) {
-        validateColorArray(lightBG);
-        validateColorArray(darkBG);
-        this.#lightBG = lightBG;
-        this.#lightBG = darkBG;
+        this.#lightBG = new Color(lightBG);
+        this.#lightBG = new Color(darkBG);
     }
 
     /**
@@ -355,41 +359,46 @@ class LayerSystem {
 
     /**
      * Retrieves width of canvas grid for which the layer system is applied
+     * @method
      * @returns {number} - The width of the canvas grid for the layers
      */
-    get getWidth() {
+    get width() {
         return this.#width;
     }
 
     /**
      * Retrieves height of canvas grid for which the layer system is applied
+     * @method
      * @returns {number} - The height of the canvas grid for the layers
      */
-    get getHeight() {
+    get height() {
         return this.#height;
     }
 
     /**
      * Retrieves number of layers in the layer list
+     * @method
      * @returns {number} - the number of layers
      */
-    get getSize() {
+    get size() {
         return this.#layerList.length;
     }
 
     /**
      * Retrieves a list of layers names
+     * @method
      * @returns {Array} - the returned array is on form [name_1, name_2, ... , name_n]
      */
-    get getNameList() {
+    get nameList() {
         return this.#layerList.map((elm) => elm.name);
     }
 
     /**
      * Retrieves the selected layer index in the layer list
+     * @method
      * @returns {number} - the index of the selected layer, -1 if non selected
      */
-    get getSelectedIndex() {
+    get selectedIndex() {
         return this.#selectedIndex;
     }
 }
