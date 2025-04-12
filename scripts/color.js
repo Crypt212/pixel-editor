@@ -9,7 +9,7 @@ class Color {
     /**
      * Creates a Color instance from various formats
      * @constructor
-     * @param {string|Array<Number>|Color} color - Input color (Hex, RGB/A, HSL/A, or Color instance)
+     * @param {string|Array<number>|Color} color - Input color (Hex, RGB/A, HSL/A, or Color instance)
      * @param {string} [mode=null] - Interpretation mode for the color parameter ("rgb", "hsl", "hex" or "copy"), if null, it's auto-detected, if possible (if given color is an array, its ambiguous, "rgb" or "hsl"?)
      * @throws {TypeError} If mode is not a valid mode string  ("rgb", "hsl", "hex" or "copy")
      * @throws {TypeError} If color is not of valid format (Hex, RGB/A, HSL/A, or Color instance)
@@ -178,7 +178,7 @@ class Color {
     /**
      * Set color from RGB values
      * @method
-     * @param {Array<Number>} rgba - A 3-D array containing the color values [r, g, b] (0-255)
+     * @param {Array<number>} rgba - A 3-D array containing the color values [r, g, b] (0-255)
      * @returns {this} The current color object
      * @throws {TypeError} If color is not a valid array of 3 number values
      * @throws {RangeError} If r, g or b values are out of range
@@ -203,7 +203,7 @@ class Color {
     /**
      * Sets color from HSL values
      * @method
-     * @param {Array<Number>} hsl - A 3-D array containing the hue values of the color [hue(any number will wrap down to 0-360), saturation(0-100), lightness(0-100)]
+     * @param {Array<number>} hsl - A 3-D array containing the hue values of the color [hue(any number will wrap down to 0-360), saturation(0-100), lightness(0-100)]
      * @returns {this} The current color object
      * @throws {TypeError} If color is not a valid array of 3 number values
      * @throws {RangeError} If saturation or lightness are out of bounds (0-100)
@@ -254,7 +254,7 @@ class Color {
     /**
      * Sets the alpha value of the color
      * @method
-     * @param {Number} alpha - the alpha value (0.0-1.0)
+     * @param {number} alpha - the alpha value (0.0-1.0)
      * @returns {Color} The current color object
      * @throws {TypeError} If alpha is not a number
      * @throws {RangeError} If alpha is not in range (0.0-1.0)
@@ -269,7 +269,7 @@ class Color {
     /**
      * Retrieves RGB values into an array
      * @method
-     * @returns {Array<Number>} A 3-D array containing the rgb values of the color [r, g, b] (r/g/b: 0-255);
+     * @returns {Array<number>} A 3-D array containing the rgb values of the color [r, g, b] (r/g/b: 0-255);
      */
     get rgb() {
         this._updateHex();
@@ -279,7 +279,7 @@ class Color {
     /**
      * Retrieves Hex values into a string, ex. "#ff0000"
      * @method
-     * @returns {String} A hex string representing the color [6 digits if no transparency, 8 digits otherwise]
+     * @returns {string} A hex string representing the color [6 digits if no transparency, 8 digits otherwise]
      */
     get hex() {
         this._updateHex();
@@ -289,7 +289,7 @@ class Color {
     /**
      * Retrieves HSL values into an array
      * @method
-     * @returns {Array<Number>} A 3-D array containing the hsl values of the color [h, s, l] (h: 0-360, s/l: 0-100)
+     * @returns {Array<number>} A 3-D array containing the hsl values of the color [h, s, l] (h: 0-360, s/l: 0-100)
      */
     get hsl() {
         this._updateHex();
@@ -300,7 +300,7 @@ class Color {
     /**
      * Retrieves alpha channel value
      * @method
-     * @returns {Number} A 3-D array containing the hsl values of the color [h, s, l] (h: 0-360, s/l: 0-100)
+     * @returns {number} A 3-D array containing the hsl values of the color [h, s, l] (h: 0-360, s/l: 0-100)
      */
     get alpha() {
         this._updateHex();
