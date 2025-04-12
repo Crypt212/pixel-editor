@@ -15,10 +15,10 @@ with conversion, mixing, and comparison capabilities.
     * [.hsl(hsl)](#Color+hsl) ⇒ <code>this</code>
     * [.hex(color)](#Color+hex) ⇒ <code>this</code>
     * [.alpha(alpha)](#Color+alpha) ⇒ [<code>Color</code>](#Color)
-    * [.rgb()](#Color+rgb) ⇒ <code>Array.&lt;Number&gt;</code>
-    * [.hex()](#Color+hex) ⇒ <code>String</code>
-    * [.hsl()](#Color+hsl) ⇒ <code>Array.&lt;Number&gt;</code>
-    * [.alpha()](#Color+alpha) ⇒ <code>Number</code>
+    * [.rgb()](#Color+rgb) ⇒ <code>Array.&lt;number&gt;</code>
+    * [.hex()](#Color+hex) ⇒ <code>string</code>
+    * [.hsl()](#Color+hsl) ⇒ <code>Array.&lt;number&gt;</code>
+    * [.alpha()](#Color+alpha) ⇒ <code>number</code>
 
 <a name="new_Color_new"></a>
 
@@ -33,7 +33,7 @@ Creates a Color instance from various formats
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| color | <code>string</code> \| <code>Array.&lt;Number&gt;</code> \| [<code>Color</code>](#Color) |  | Input color (Hex, RGB/A, HSL/A, or Color instance) |
+| color | <code>string</code> \| <code>Array.&lt;number&gt;</code> \| [<code>Color</code>](#Color) |  | Input color (Hex, RGB/A, HSL/A, or Color instance) |
 | [mode] | <code>string</code> | <code>null</code> | Interpretation mode for the color parameter ("rgb", "hsl", "hex" or "copy"), if null, it's auto-detected, if possible (if given color is an array, its ambiguous, "rgb" or "hsl"?) |
 
 **Example**  
@@ -112,7 +112,7 @@ Set color from RGB values
 
 | Param | Type | Description |
 | --- | --- | --- |
-| rgba | <code>Array.&lt;Number&gt;</code> | A 3-D array containing the color values [r, g, b] (0-255) |
+| rgba | <code>Array.&lt;number&gt;</code> | A 3-D array containing the color values [r, g, b] (0-255) |
 
 <a name="Color+hsl"></a>
 
@@ -129,7 +129,7 @@ Sets color from HSL values
 
 | Param | Type | Description |
 | --- | --- | --- |
-| hsl | <code>Array.&lt;Number&gt;</code> | A 3-D array containing the hue values of the color [hue(any number will wrap down to 0-360), saturation(0-100), lightness(0-100)] |
+| hsl | <code>Array.&lt;number&gt;</code> | A 3-D array containing the hue values of the color [hue(any number will wrap down to 0-360), saturation(0-100), lightness(0-100)] |
 
 <a name="Color+hex"></a>
 
@@ -162,33 +162,33 @@ Sets the alpha value of the color
 
 | Param | Type | Description |
 | --- | --- | --- |
-| alpha | <code>Number</code> | the alpha value (0.0-1.0) |
+| alpha | <code>number</code> | the alpha value (0.0-1.0) |
 
 <a name="Color+rgb"></a>
 
-### color.rgb() ⇒ <code>Array.&lt;Number&gt;</code>
+### color.rgb() ⇒ <code>Array.&lt;number&gt;</code>
 Retrieves RGB values into an array
 
 **Kind**: instance method of [<code>Color</code>](#Color)  
-**Returns**: <code>Array.&lt;Number&gt;</code> - A 3-D array containing the rgb values of the color [r, g, b] (r/g/b: 0-255);  
+**Returns**: <code>Array.&lt;number&gt;</code> - A 3-D array containing the rgb values of the color [r, g, b] (r/g/b: 0-255);  
 <a name="Color+hex"></a>
 
-### color.hex() ⇒ <code>String</code>
+### color.hex() ⇒ <code>string</code>
 Retrieves Hex values into a string, ex. "#ff0000"
 
 **Kind**: instance method of [<code>Color</code>](#Color)  
-**Returns**: <code>String</code> - A hex string representing the color [6 digits if no transparency, 8 digits otherwise]  
+**Returns**: <code>string</code> - A hex string representing the color [6 digits if no transparency, 8 digits otherwise]  
 <a name="Color+hsl"></a>
 
-### color.hsl() ⇒ <code>Array.&lt;Number&gt;</code>
+### color.hsl() ⇒ <code>Array.&lt;number&gt;</code>
 Retrieves HSL values into an array
 
 **Kind**: instance method of [<code>Color</code>](#Color)  
-**Returns**: <code>Array.&lt;Number&gt;</code> - A 3-D array containing the hsl values of the color [h, s, l] (h: 0-360, s/l: 0-100)  
+**Returns**: <code>Array.&lt;number&gt;</code> - A 3-D array containing the hsl values of the color [h, s, l] (h: 0-360, s/l: 0-100)  
 <a name="Color+alpha"></a>
 
-### color.alpha() ⇒ <code>Number</code>
+### color.alpha() ⇒ <code>number</code>
 Retrieves alpha channel value
 
 **Kind**: instance method of [<code>Color</code>](#Color)  
-**Returns**: <code>Number</code> - A 3-D array containing the hsl values of the color [h, s, l] (h: 0-360, s/l: 0-100)  
+**Returns**: <code>number</code> - A 3-D array containing the hsl values of the color [h, s, l] (h: 0-360, s/l: 0-100)  
