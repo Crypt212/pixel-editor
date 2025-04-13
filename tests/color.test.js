@@ -262,17 +262,17 @@ describe('Color Class', () => {
             });
 
             test.each`
-                inputColor1               | inputColor2                              | inputWeight  | includeAlpha | result
-                ${'#FF8844CC'}            | ${'#FF8845CD'}                           | ${2}         | ${true}      | ${'match'}
-                ${'#FF8844CC'}            | ${'#FE8943CB'}                           | ${3}         | ${true}      | ${'match'}
-                ${'#FF8844CC'}            | ${'#000000'}                             | ${undefined} | ${true}      | ${'not match'}
-                ${'#FF8844CC'}            | ${'#FF8844'}                             | ${10}        | ${true}      | ${'not match'}
-                ${'#FF8844CC'}            | ${'#FF8844'}                             | ${10}        | ${false}     | ${'match'}
-                ${'#FF8844CC'}            | ${new Color([255, 136, 68, 0.8], 'rgb')} | ${1}         | ${true}      | ${'match'}
-                ${'#FF8844CC'}            | ${'#FF8A44CD'}                           | ${1}         | ${false}     | ${'not match'} // difference 2
-                ${'#FF8844CC'}            | ${'#FF8A44CD'}                           | ${1}         | ${true}      | ${'not match'} // difference 2
-                ${'#FF8844CC'}            | ${'#FF8A44CD'}                           | ${2}         | ${true}      | ${'match'}     // difference 2
-                ${'#FF8844CC'}            | ${'#FF8A44CD'}                           | ${3}         | ${true}      | ${'match'}     // difference 2
+                inputColor1               | inputColor2                                  | inputWeight  | includeAlpha | result
+                ${'#FF8844CC'}            | ${'#FF8845CD'}                               | ${2}         | ${true}      | ${'match'}
+                ${'#FF8844CC'}            | ${'#FE8943CB'}                               | ${3}         | ${true}      | ${'match'}
+                ${'#FF8844CC'}            | ${'#000000'}                                 | ${undefined} | ${true}      | ${'not match'}
+                ${'#FF8844CC'}            | ${'#FF8844'}                                 | ${10}        | ${true}      | ${'not match'}
+                ${'#FF8844CC'}            | ${'#FF8844'}                                 | ${10}        | ${false}     | ${'match'}
+                ${'#FF8844CC'}            | ${new Color([255, 136, 68, 0.8], 'rgb').hex} | ${1}         | ${true}      | ${'match'}
+                ${'#FF8844CC'}            | ${'#FF8A44CD'}                               | ${1}         | ${false}     | ${'not match'} // difference 2
+                ${'#FF8844CC'}            | ${'#FF8A44CD'}                               | ${1}         | ${true}      | ${'not match'} // difference 2
+                ${'#FF8844CC'}            | ${'#FF8A44CD'}                               | ${2}         | ${true}      | ${'match'}     // difference 2
+                ${'#FF8844CC'}            | ${'#FF8A44CD'}                               | ${3}         | ${true}      | ${'match'}     // difference 2
             `('should $result $inputColor1 to $inputColor2 within tolerance $inputWeight and includeAlpha set to $includeAlpha', ({ _, inputColor1, inputColor2, inputWeight, includeAlpha, result }) => {
                 expect(new Color(inputColor1).isSimilarTo(new Color(inputColor2), inputWeight, includeAlpha)).toBe(result === 'match');
             });
@@ -289,14 +289,14 @@ describe('Color Class', () => {
             });
 
             test.each`
-                inputColor1    | inputColor2                    | includeAlpha | result
-                ${'#AABBCCDD'} | ${'#aabbcc'}                   | ${true}      | ${'not match'} // reject non-equal colors
-                ${'#AABBCCDD'} | ${'#aabbccde'}                 | ${true}      | ${'not match'} // reject non-equal colors
-                ${'#AABBCCDD'} | ${'#aabbcc'}                   | ${false}     | ${'match'}     // ignore alpha
-                ${'#AABBCCDD'} | ${'#aabbcc00'}                 | ${false}     | ${'match'}
-                ${'#000000'}   | ${new Color([0, 0, 0], 'rgb')} | ${true}      | ${'match'}
-                ${'#000000'}   | ${new Color([1, 0, 0], 'rgb')} | ${true}      | ${'not match'}
-                ${'#ABC'}      | ${'#AABBCC'}                   | ${true}      | ${'match'}
+                inputColor1    | inputColor2                        | includeAlpha | result
+                ${'#AABBCCDD'} | ${'#aabbcc'}                       | ${true}      | ${'not match'} // reject non-equal colors
+                ${'#AABBCCDD'} | ${'#aabbccde'}                     | ${true}      | ${'not match'} // reject non-equal colors
+                ${'#AABBCCDD'} | ${'#aabbcc'}                       | ${false}     | ${'match'}     // ignore alpha
+                ${'#AABBCCDD'} | ${'#aabbcc00'}                     | ${false}     | ${'match'}
+                ${'#000000'}   | ${new Color([0, 0, 0], 'rgb').hex} | ${true}      | ${'match'}
+                ${'#000000'}   | ${new Color([1, 0, 0], 'rgb').hex} | ${true}      | ${'not match'}
+                ${'#ABC'}      | ${'#AABBCC'}                       | ${true}      | ${'match'}
             ` ('should $result $inputColor1 to $inputColor2 exactly', ({ _, inputColor1, inputColor2, includeAlpha, result }) => {
                 expect(new Color(inputColor1).isEqualTo(new Color(inputColor2), includeAlpha)).toBe(result === 'match');
             });

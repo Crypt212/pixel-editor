@@ -6,6 +6,12 @@ import { validateNumber } from "./validation.js";
  * @class
  */
 class Color {
+
+    #rgb = [0, 0, 0]; // (rgb: 0-255, a: 0.0-1.0)
+    #hex = '#000000';
+    #alpha = 1;
+    #updated = false;
+
     /**
      * Creates a Color instance from various formats
      * @constructor
@@ -20,14 +26,9 @@ class Color {
      * new Color(new Color([255, 0, 0]), "copy") // Copy other color
      */
     constructor(color = Color.RED, mode = null) {
-        this._rgb = [0, 0, 0]; // (rgb: 0-255, a: 0.0-1.0)
-        this._hex = '#000000';
-        this._alpha = 1;
-        this._updated = false;
-
         // Auto-detect mode if not specified
         if (mode === null) {
-            mode = this._detectInputType(color);
+            mode = this.#detectInputType(color);
         }
 
         switch (mode) {
@@ -53,7 +54,7 @@ class Color {
             case "copy":
             case "cpy":
                 if (!(color instanceof Color)) throw new TypeError('Copy source must be a Color instance');
-                this._copyFrom(color);
+                this.#copyFrom(color);
                 break;
 
             default:
@@ -191,12 +192,12 @@ class Color {
         validateNumber(color[1], "Green component", { start: 0, end: 255 });
         validateNumber(color[2], "Blue component", { start: 0, end: 255 });
 
-        this._rgb = [
+        this.#rgb = [
             Math.round(color[0]),
             Math.round(color[1]),
             Math.round(color[2]),
         ];
-        this._updated = false;
+        this.#updated = false;
         return this;
     }
 
@@ -216,8 +217,8 @@ class Color {
         validateNumber(color[1], "Saturation", { start: 0, end: 100 });
         validateNumber(color[2], "Lightness", { start: 0, end: 100 });
 
-        this._rgb = [...hslToRgb(color[0], color[1], color[2])].map(v => Math.round(v));
-        this._updated = false;
+        this.#rgb = [...hslToRgb(color[0], color[1], color[2])].map(v => Math.round(v));
+        this.#updated = false;
         return this;
     }
 
@@ -241,13 +242,13 @@ class Color {
         }
 
         this.rgb = [
-            parseInt(hexDigits.substr(0, 2), 16),
-            parseInt(hexDigits.substr(2, 2), 16),
-            parseInt(hexDigits.substr(4, 2), 16),
+            parseInt(hexDigits.substring(0, 2), 16),
+            parseInt(hexDigits.substring(2, 4), 16),
+            parseInt(hexDigits.substring(4, 6), 16),
         ];
-        this.alpha = hexDigits.length > 6 ? parseInt(hexDigits.substr(6, 2), 16) / 255 : 1;
+        this.alpha = hexDigits.length > 6 ? parseInt(hexDigits.substring(6, 8), 16) / 255 : 1;
 
-        this._updated = false;
+        this.#updated = false;
         return this;
     }
 
@@ -261,8 +262,8 @@ class Color {
      */
     set alpha(alpha) {
         validateNumber(alpha, "Alpha", { start: 0, end: 1 });
-        this._alpha = alpha;
-        this._updated = false;
+        this.#alpha = alpha;
+        this.#updated = false;
         return this;
     }
 
@@ -272,8 +273,8 @@ class Color {
      * @returns {Array<number>} A 3-D array containing the rgb values of the color [r, g, b] (r/g/b: 0-255);
      */
     get rgb() {
-        this._updateHex();
-        return [...this._rgb];
+        this.#updateHex();
+        return [...this.#rgb];
     }
 
     /**
@@ -282,8 +283,8 @@ class Color {
      * @returns {string} A hex string representing the color [6 digits if no transparency, 8 digits otherwise]
      */
     get hex() {
-        this._updateHex();
-        return this._hex;
+        this.#updateHex();
+        return this.#hex;
     }
 
     /**
@@ -292,8 +293,8 @@ class Color {
      * @returns {Array<number>} A 3-D array containing the hsl values of the color [h, s, l] (h: 0-360, s/l: 0-100)
      */
     get hsl() {
-        this._updateHex();
-        const [h, s, l] = rgbToHsl(...this._rgb);
+        this.#updateHex();
+        const [h, s, l] = rgbToHsl(...this.#rgb);
         return [h, s, l];
     }
 
@@ -303,8 +304,8 @@ class Color {
      * @returns {number} A 3-D array containing the hsl values of the color [h, s, l] (h: 0-360, s/l: 0-100)
      */
     get alpha() {
-        this._updateHex();
-        return this._alpha;
+        this.#updateHex();
+        return this.#alpha;
     }
 
     toString() {
@@ -317,23 +318,23 @@ class Color {
 
     // Private methods ---------------------------------------------------
 
-    _updateHex() {
-        if (this._updated) { return }
-        this._updated = true;
-        const [r, g, b] = this._rgb, a = this._alpha;
+    #updateHex() {
+        if (this.#updated) { return }
+        this.#updated = true;
+        const [r, g, b] = this.#rgb, a = this.#alpha;
         const components = [
             Math.round(r),
             Math.round(g),
             Math.round(b)
         ];
 
-        this._hex = `#${components.map(c =>
+        this.#hex = `#${components.map(c =>
             c.toString(16).padStart(2, '0')
         ).join('')}${a < 1 ? Math.round(a * 255).toString(16).padStart(2, '0') : ''
             }`;
     }
 
-    _detectInputType(color) {
+    #detectInputType(color) {
         if (color instanceof Color) return "copy";
         if (typeof color === 'string') return "hex";
         if (Array.isArray(color)) {
@@ -344,11 +345,11 @@ class Color {
         throw new TypeError('Unable to detect color format. Please specify mode.');
     }
 
-    _copyFrom(color) {
-        this._rgb = [...color._rgb];
-        this._hex = color._hex;
-        this._alpha = color._alpha;
-        this._updated = color._updated;
+    #copyFrom(color) {
+        this.#rgb = [...color.#rgb];
+        this.#hex = color.#hex;
+        this.#alpha = color.#alpha;
+        this.#updated = color.#updated;
     }
 }
 
