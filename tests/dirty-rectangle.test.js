@@ -106,8 +106,6 @@ describe('DirtyRectangle', () => {
                         return c;
                     }, [[]]);
 
-                console.log(changes);
-
                 dr = createRectWithChanges(changes);
                 expect(dr.bounds).toEqual(expectedBounds);
             });
