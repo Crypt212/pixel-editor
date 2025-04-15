@@ -6,18 +6,6 @@
 class DirtyRectangle {
 
     /**
-     * Class variable which decides the type of before and after states for changes
-     * @type {Object}
-     */
-    #stateType
-
-    /**
-     * Flag for determining whether to check states types
-     * @type {boolean}
-     */
-    #strictType
-
-    /**
      * Map from pixel positions `${x},${y}` to a change record containing the position and before/after states
      * @type {Map<string, {x: number, y: number, before: any, after: any}>}
      */
@@ -37,17 +25,8 @@ class DirtyRectangle {
     /**
      * Creates a DirtyRectangle instance.
      * @constructor
-     * @param {Object} [options] - Configuration options.
-     * @param {function} [options.stateType=Object] - The constructor for state objects. Relevant only if strictType is true.
-     * @param {boolean} [options.strictType=false] - Enforce that state objects are instances of stateType.
      */
-    constructor({
-        stateType = Object,
-        strictType = false,
-    } = {}) {
-        this.#stateType = stateType;
-        this.#strictType = Boolean(strictType);
-    }
+    constructor() { }
 
     /**
      * Merges another DirtyRectangle into a copy of this one, and returns it.
@@ -77,10 +56,7 @@ class DirtyRectangle {
      * @returns {DirtyRectangle} The clone
      */
     clone() {
-        const copy = new DirtyRectangle({
-            stateType: this.#stateType,
-            strictType: this.#strictType,
-        });
+        const copy = new DirtyRectangle({ });
 
         this.#changes.forEach(value => {
             copy.setChange(value.x, value.y, value.after, value.before);
@@ -96,15 +72,8 @@ class DirtyRectangle {
      * @param {number} y - Y-coordinate (floored).
      * @param {any} after - New state.
      * @param {any} [before=after] - Original state (used only on first add).
-     * @throws {TypeError} If strictType is enabled and states are invalid.
      */
     setChange(x, y, after, before = after) {
-        if (this.#strictType &&
-            (!(before instanceof this.#stateType) ||
-                !(after instanceof this.#stateType))) {
-            throw new TypeError("Invalid state type");
-        }
-
         x = Math.floor(x);
         y = Math.floor(y);
         const key = `${x},${y}`;
@@ -152,15 +121,6 @@ class DirtyRectangle {
     }
 
     /**
-     * Whether state types are checked 
-     * @method
-     * @returns {boolean}
-     */
-    get isStrictType() {
-        return this.#strictType;
-    }
-
-    /**
      * Width of the bounding rectangle.
      * @method
      * @returns {number}
@@ -176,15 +136,6 @@ class DirtyRectangle {
      */
     get height() {
         return this.isEmpty ? 0 : this.#bounds.y1 - this.#bounds.y0 + 1;
-    }
-
-    /**
-     * Type used for state validation.
-     * @method
-     * @returns {Object}
-     */
-    get stateType() {
-        return this.#stateType;
     }
 
     /**
