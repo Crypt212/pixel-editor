@@ -21,8 +21,6 @@ describe('DirtyRectangle', () => {
             expect(dr.width).toBe(0);
             expect(dr.height).toBe(0);
             expect(dr.isEmpty).toBe(true);
-            expect(dr.stateType).toBe(Object);
-            expect(dr.isStrictType).toBe(false);
         });
     });
 
@@ -39,19 +37,6 @@ describe('DirtyRectangle', () => {
                 expect(dr.hasChange(...expected)).toBe(true);
             });
         });
-
-        describe('Error Handling', () => {
-            test.each`
-                options                                    | values         | errorType    | description     
-                ${{ stateType: Number, strictType: true }} | ${['text', 5]} | ${TypeError} | ${'wrong type for after state'} 
-                ${{ stateType: Number, strictType: true }} | ${[5, 'text']} | ${TypeError} | ${'wrong type for before state'} 
-                ${{ stateType: Object, strictType: true }} | ${[null, 5]}   | ${TypeError} | ${'null value'} 
-            `('should throws $errorType when $description', ({ options, values, errorType }) => {
-                const strictTypeDR = new DirtyRectangle(options);
-                expect(() => strictTypeDR.setChange(0, 0, values[0], values[1])).toThrow(errorType);
-            });
-        });
-
 
         describe('State Management', () => {
             test('should preserve initial before state', () => {

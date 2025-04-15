@@ -7,16 +7,14 @@ Maintains both a Map for order and a Set for duplicate checking.
 **Kind**: global class  
 
 * [DirtyRectangle](#DirtyRectangle)
-    * [new DirtyRectangle([options])](#new_DirtyRectangle_new)
+    * [new DirtyRectangle()](#new_DirtyRectangle_new)
     * [.merge(source)](#DirtyRectangle+merge) ⇒ [<code>DirtyRectangle</code>](#DirtyRectangle)
     * [.clone()](#DirtyRectangle+clone) ⇒ [<code>DirtyRectangle</code>](#DirtyRectangle)
     * [.setChange(x, y, after, [before])](#DirtyRectangle+setChange)
     * [.hasChange(x, y)](#DirtyRectangle+hasChange) ⇒ <code>boolean</code>
     * [.isEmpty()](#DirtyRectangle+isEmpty) ⇒ <code>boolean</code>
-    * [.isStrictType()](#DirtyRectangle+isStrictType) ⇒ <code>boolean</code>
     * [.width()](#DirtyRectangle+width) ⇒ <code>number</code>
     * [.height()](#DirtyRectangle+height) ⇒ <code>number</code>
-    * [.stateType()](#DirtyRectangle+stateType) ⇒ <code>Object</code>
     * [.afterStates()](#DirtyRectangle+afterStates) ⇒ <code>Array.&lt;{x: number, y: number, state: any}&gt;</code>
     * [.beforeStates()](#DirtyRectangle+beforeStates) ⇒ <code>Array.&lt;{x: number, y: number, state: any}&gt;</code>
     * [.changes()](#DirtyRectangle+changes) ⇒ <code>Map.&lt;string, {x: number, y: number, before: any, after: any}&gt;</code>
@@ -24,15 +22,8 @@ Maintains both a Map for order and a Set for duplicate checking.
 
 <a name="new_DirtyRectangle_new"></a>
 
-### new DirtyRectangle([options])
+### new DirtyRectangle()
 Creates a DirtyRectangle instance.
-
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [options] | <code>Object</code> |  | Configuration options. |
-| [options.stateType] | <code>function</code> | <code>Object</code> | The constructor for state objects. Relevant only if strictType is true. |
-| [options.strictType] | <code>boolean</code> | <code>false</code> | Enforce that state objects are instances of stateType. |
 
 <a name="DirtyRectangle+merge"></a>
 
@@ -59,10 +50,6 @@ Creates a shallow copy (states are not deep-cloned).
 Adds or updates a pixel modification. Coordinates are floored to integers.
 
 **Kind**: instance method of [<code>DirtyRectangle</code>](#DirtyRectangle)  
-**Throws**:
-
-- <code>TypeError</code> If strictType is enabled and states are invalid.
-
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -89,12 +76,6 @@ Checks if a pixel has been modified.
 Returns whether the rectangle is empty.
 
 **Kind**: instance method of [<code>DirtyRectangle</code>](#DirtyRectangle)  
-<a name="DirtyRectangle+isStrictType"></a>
-
-### dirtyRectangle.isStrictType() ⇒ <code>boolean</code>
-Whether state types are checked
-
-**Kind**: instance method of [<code>DirtyRectangle</code>](#DirtyRectangle)  
 <a name="DirtyRectangle+width"></a>
 
 ### dirtyRectangle.width() ⇒ <code>number</code>
@@ -105,12 +86,6 @@ Width of the bounding rectangle.
 
 ### dirtyRectangle.height() ⇒ <code>number</code>
 Height of the bounding rectangle.
-
-**Kind**: instance method of [<code>DirtyRectangle</code>](#DirtyRectangle)  
-<a name="DirtyRectangle+stateType"></a>
-
-### dirtyRectangle.stateType() ⇒ <code>Object</code>
-Type used for state validation.
 
 **Kind**: instance method of [<code>DirtyRectangle</code>](#DirtyRectangle)  
 <a name="DirtyRectangle+afterStates"></a>
