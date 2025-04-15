@@ -1,6 +1,9 @@
 /**
  * Validates the color array.
- * @param {[number, number, number, number]} color - The color array [red, green, blue, alpha] to validate.
+ * @param {Array<number>} color - The color array [red, green, blue, alpha] to validate.
+ * @property {number} 0 - Red (0-255)
+ * @property {number} 1 - Green (0-255)
+ * @property {number} 2 - Blue (0-255)
  * @returns {boolean} - Returns true if the color array is valid, otherwise false.
  * @throws {TypeError} Throws an error if the color is invalid.
  * @deprecated use the Color class instead
@@ -40,7 +43,7 @@ export function validateColorArray(color) {
 /**
  * Validates the number to be valid number between start and end inclusive.
  * @param {number} number - The number to validate.
- * @param {String} varName - The variable name to show in the error message which will be thrown.
+ * @param {string} varName - The variable name to show in the error message which will be thrown.
  * @param {Object} Contains some optional constraints: max/min limits, and if the number is integer only
  * @param {number | undefined} start - The minimum of valid range, set to null to omit the constraint.
  * @param {number | undefined} end - The maximum of valid range, set to null to omit the constraint.
