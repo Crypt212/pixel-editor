@@ -7,9 +7,36 @@ import { validateNumber } from "./validation.js";
  */
 class Color {
 
-    #rgb = [0, 0, 0]; // (rgb: 0-255, a: 0.0-1.0)
+    /**
+     * RGB color array (0-255 values).
+     * @type {Array<number>}
+     * @property {number} 0 - Red (0-255)
+     * @property {number} 1 - Green (0-255)
+     * @property {number} 2 - Blue (0-255)
+     */
+    #rgb = [0, 0, 0];
+
+    /**
+     * Hexadecimal color string in `#RRGGBB` or `#RRGGBBAA` format.
+     * @type {string}
+     * @example '#ff0000' // Red
+     * @example '#00ff0080' // Green with 50% alpha
+     */
     #hex = '#000000';
+
+    /**
+     * Alpha transparency value (0.0 = fully transparent, 1.0 = fully opaque).
+     * @type {number}
+     * @min 0.0
+     * @max 1.0
+     */
     #alpha = 1;
+
+    /**
+     * Dirty flag indicating whether the color was modified since last render.
+     * @type {boolean}
+     * @readonly
+     */
     #updated = false;
 
     /**
