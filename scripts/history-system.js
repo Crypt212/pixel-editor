@@ -1,59 +1,87 @@
-import {validateNumber} from "./validation.js";
+import { validateNumber } from "./validation.js";
 
 /**
- * Represents a history system to store, undo, redo action data.
+ * Represents a circular buffer-based history system for undo/redo operations.
+ * Tracks action groups containing arbitrary action data with shallow copying.
+ * 
+ * Key Features:
+ * - Fixed-capacity circular buffer (1-64 actions)
+ * - Atomic action grouping
+ * - Shallow copy data storage
+ * - Undo/redo functionality
+ * - Action metadata (names/IDs)
+ * 
+ * @example
+ * const history = new HistorySystem(10);
+ * history.addActionGroup("Paint");
+ * history.addActionData({x: 1, y: 2, color: "#FF0000"});
+ * history.undo(); // Reverts to previous state
+ * 
  * @class
  */
 class HistorySystem {
+
+    /**
+     * Internal circular buffer storing action groups
+     * @type {Array<{groupName: string, groupID: number, actionData: Array<any>}>}
+     * @private
+     */
     #buffer;
+
+    /**
+     * The index of the current selected action group
+     * @type {number}
+     * @private
+     */
     #currentIndex = -1;
+
+    /**
+     * The index of the oldest saved action group in the history system
+     * @type {number}
+     * @private
+     */
     #startIndex = 0;
+
+    /**
+     * The index of the last saved action group in the history system
+     * @type {number}
+     * @private
+     */
     #endIndex = -1;
+
+    /**
+     * Internal counter to enumerate increamental IDs for the created groups
+     * @type {number}
+     * @private
+     */
     #actionGroupIDCounter = -1;
 
     /**
-     * Creates a history system with specified capacity
+     * Creates a new HistorySystem with specified capacity
      * @constructor
-     * @param {number} capacity - The max size of the history buffer (range from 1 to 64)
-     * @throws {Error} Throws an error if capacity is not an integer between 1 and 64
+     * @param {number} capacity - Maximum stored action groups (1-64)
+     * @throws {TypeError} If capacity is not an integer
+     * @throws {RangeError} If capacity is outside 1-64 range
      */
     constructor(capacity) {
-        validateNumber(capacity, "Capacity", {start: 1, end: 64, integerOnly: true});
+        validateNumber(capacity, "Capacity", { start: 1, end: 64, integerOnly: true });
 
         capacity = Math.floor(capacity);
         this.#buffer = new Array(capacity);
     }
 
     /**
-     * Creates a copy of a history system object
+     * Adds a new named action group to the history
      * @method
-     */
-    //copy() {
-    //    const copyHistory = new HistorySystem();
-    //    copyHistory.#currentIndex = this.#currentIndex;
-    //    copyHistory.#startIndex = this.#startIndex;
-    //    copyHistory.#endIndex = this.#endIndex;
-    //    copyHistory.#actionGroupIDCounter = this.#actionGroupIDCounter;
-    //    this.#buffer.forEach(elm => {
-    //        if (typeof elm === "object" && elm !== null) {
-    //            if (Array.isArray(elm))
-    //                copyHistory.#buffer.push([...elm]);
-    //            else copyHistory.#buffer.push({...elm});
-    //        } else copyHistory.#buffer.push(elm);
-    //    });
-    //    return copyHistory;
-    //}
-
-
-    /**
-     * Addes action group with given name and incremental ID to the action buffer
-     * @method
-     * @param {string} actionGroupName - Name of the action group to be added
-     * @throws {Error} Throws an error if given action group name is not of type string
+     * @param {string} [actionGroupName=""] - Descriptive name for the action group
+     * @throws {TypeError} If name is not a string
      */
     addActionGroup(actionGroupName = "") {
         if (typeof actionGroupName !== "string")
             throw new TypeError("Action group name must be string");
+
+        if (this.#currentIndex !== this.#endIndex && this.#endIndex !== -1)
+            this.#endIndex = this.#currentIndex;
 
         if (this.getBufferSize === this.getBufferCapacity) {
             this.#startIndex = (this.#startIndex + 1) % this.getBufferCapacity;
@@ -74,10 +102,13 @@ class HistorySystem {
     }
 
     /**
-     * Adds a shallow copy of action data to the current selected action group
+     * Adds data to the current action group (with shallow copying)
      * @method
-     * @param {any} actionDataObject - The action data to be stored in the current action group
-     * @throws {Error} Throws an error if no action group selected currently (eg. when at the absolute start)
+     * @param {any} actionDataObject - Data to store (objects/arrays are shallow copied)
+     * @throws {Error} If no active action group exists
+     * @example
+     * Stores a copy of the object
+     * history.addActionData({x: 1, y: 2});
      */
     addActionData(actionDataObject) {
         if (this.#currentIndex === -1) {
@@ -95,40 +126,42 @@ class HistorySystem {
     }
 
     /**
-     * Retrieves action group at an offset from current selected group
-     * @method
-     * @param {number} offset - The the offset from the current group for which ID gets returned
-     * @returns {Object{groupID, groupName, actionArray} | number} The selected action group, -1 if out of range
-     * @throws {Error} Throws an error if offset is not an integer number
+     * Gets action group metadata by offset from current position
+     * @private
+     * @param {number} [offset=0] - Offset from current position
+     * @returns {(Object|number)} Action group or -1 if invalid offset
      */
     #getActionGroup(offset = 0) {
-        validateNumber(offset, "Offset", {integerOnly: true});
+        validateNumber(offset, "Offset", { integerOnly: true });
 
-        let check;
+        let distance;
         let index = this.#currentIndex;
 
-        if (offset > 0) {
-            if (index === -1) {
+        if (offset > 0) { // go right -> end
+            if (index === -1) {         // absolute start 
                 index = this.#startIndex;
                 offset--;
             }
 
-            check = this.#endIndex - index;
-            check = check < 0 ? check + this.getBufferCapacity : check;
+            distance = this.#endIndex - index;
 
-            if (check - offset < 0) return -1;
+            // negate the wrap effect
+            distance = distance < 0 ? distance + this.getBufferCapacity : distance;
+
+            if (distance - offset < 0) return -1;
 
             return this.#buffer[(index + offset) % this.getBufferCapacity];
-        } else if (offset < 0) {
+        } else if (offset < 0) { // go left -> start
             offset *= -1;
 
-            if (index === -1) return -1;
+            if (index === -1) return -1; // absolute start
 
-            check = index - this.#startIndex;
-            check = check < 0 ? check + this.getBufferCapacity : check;
+            distance = index - this.#startIndex;
 
-            // if (check - offset) is -1 => result index at -1 which is start => return -1
-            if (check - offset < 0) return -1;
+            // negate the wrap effect
+            distance = distance < 0 ? distance + this.getBufferCapacity : distance;
+
+            if (distance - offset < 0) return -1;
 
             return this.#buffer[
                 (index - offset + this.getBufferCapacity) %
@@ -177,12 +210,12 @@ class HistorySystem {
     }
 
     /**
-     * Reverts to the previous action group
+     * Moves backward in history (undo)
      * @method
-     * @returns {number} The ID of the previous action group
+     * @returns {number} ID of the restored action group (-1 at start)
      */
     undo() {
-        if (this.#currentIndex === this.#startIndex) this.#currentIndex = -1;
+        if (this.#currentIndex === this.#startIndex) this.#currentIndex = -1; // absolute start
 
         if (this.#currentIndex === -1) return this.#currentIndex;
 
@@ -193,26 +226,27 @@ class HistorySystem {
     }
 
     /**
-     * Advances to the next action group
+     * Moves forward in history (redo)
      * @method
-     * @returns {number} The ID of next action group
+     * @returns {number} ID of the restored action group (-1 at end)
      */
     redo() {
-        if (this.#currentIndex !== this.#endIndex)
+        if (this.#currentIndex !== this.#endIndex) {
             if (this.#currentIndex === -1) {
                 this.#currentIndex = this.#startIndex;
             } else {
                 this.#currentIndex =
                     (this.#currentIndex + 1) % this.getBufferCapacity;
             }
+        } else if (this.#endIndex === -1) return this.#currentIndex;
 
         return this.#buffer[this.#currentIndex].groupID;
     }
 
     /**
-     * Retrieves number of action groups stored currently in the action buffer
-     * @method
-     * @returns {number} The size
+     * Current number of stored action groups
+     * @member {number}
+     * @readonly
      */
     get getBufferSize() {
         if (this.#endIndex == -1) return 0;
@@ -224,9 +258,9 @@ class HistorySystem {
     }
 
     /**
-     * Retrieves action buffer capacity (maximum number of action groups to add to the system)
-     * @method
-     * @returns {number} The capacity
+     * Maximum number of storable action groups
+     * @member {number}
+     * @readonly
      */
     get getBufferCapacity() {
         return this.#buffer.length;
