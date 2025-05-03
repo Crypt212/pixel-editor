@@ -2,7 +2,7 @@ import { validateNumber } from "./validation.js";
 
 /**
  * Represents a circular buffer-based history system for undo/redo operations.
- * Tracks action groups containing arbitrary action data with shallow copying.
+ * Tracks action groups containing arbitrary action data.
  * 
  * Key Features:
  * - Fixed-capacity circular buffer (1-64 actions)
@@ -102,9 +102,9 @@ class ActionHistory {
     }
 
     /**
-     * Adds data to the current action group (with shallow copying)
+     * Adds data to the current action group its reference (no copy is made)
      * @method
-     * @param {any} actionDataObject - Data to store (objects/arrays are shallow copied)
+     * @param {any} actionDataObject - Data to store
      * @throws {Error} If no active action group exists
      * @example
      * Stores a copy of the object
@@ -115,14 +115,7 @@ class ActionHistory {
             throw new Error("No action group to add to.");
         }
 
-        let newObject;
-        if (typeof actionDataObject === "object" && actionDataObject !== null) {
-            if (Array.isArray(actionDataObject))
-                newObject = [...actionDataObject];
-            else newObject = { ...actionDataObject };
-        } else newObject = actionDataObject;
-
-        this.#buffer[this.#currentIndex].actionData.push(newObject);
+        this.#buffer[this.#currentIndex].actionData.push(actionDataObject);
     }
 
     /**
