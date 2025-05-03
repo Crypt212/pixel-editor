@@ -104,41 +104,75 @@ class Color {
         weight = Math.min(1, Math.max(0, weight)); // Clamp 0-1
         const color1 = this;
         const color2 = color;
-        if (!(color2 instanceof Color))
-            throw new TypeError("color must be instance of Color class");
 
-        const [a1, a2] = [color1.alpha, color2.alpha];
+        if (!(color2 instanceof Color)) {
+            throw new TypeError("color must be instance of Color class");
+        }
+
+        const newAlpha = color1.alpha + (color2.alpha - color1.alpha) * weight;
 
         switch (mode) {
-            case 'hsl': // HSL mixing (circular interpolation for hue)
+            case 'hsl':
                 const [h1, s1, l1] = color1.hsl;
                 const [h2, s2, l2] = color2.hsl;
 
-                // Handle hue wrapping (e.g., 350° + 20° → 10°)
+                // Hue wrapping
                 let hueDiff = h2 - h1;
                 if (Math.abs(hueDiff) > 180) {
                     hueDiff += hueDiff > 0 ? -360 : 360;
                 }
 
-                return Color.create([
-                    (h1 + hueDiff * weight + 360) % 360, // Wrap around 360°
-                    s1 + (s2 - s1) * weight,
-                    l1 + (l2 - l1) * weight,
-                    a1 + (a2 - a1) * weight,
-                ], "hsl");
-            case 'rgb': // RGB mixing (linear interpolation)
+                return Color.create({
+                    hsl: [
+                        (h1 + hueDiff * weight + 360) % 360,
+                        s1 + (s2 - s1) * weight,
+                        l1 + (l2 - l1) * weight,
+                    ],
+                    alpha: newAlpha
+                });
+
+            case 'rgb':
+            default:
                 const [r1, g1, b1] = color1.rgb;
                 const [r2, g2, b2] = color2.rgb;
 
-                return Color.create([
-                    r1 + (r2 - r1) * weight,
-                    g1 + (g2 - g1) * weight,
-                    b1 + (b2 - b1) * weight,
-                    a1 + (a2 - a1) * weight
-                ], 'rgb');
-            default:
-                throw new TypeError(`Invalid mode for mixing: ${mode}`);
+                return Color.create({
+                    rgb: [
+                        r1 + (r2 - r1) * weight,
+                        g1 + (g2 - g1) * weight,
+                        b1 + (b2 - b1) * weight
+                    ],
+                    alpha: newAlpha
+                });
         }
+    }
+
+    /**
+     * Composites a color over another 
+     * @method
+     * @param {Color} bottomColor - The color to composite over
+     * @returns {Color} The resulting new composited color
+     * @throws {TypeError} If bottomColor is an not instance of Color class
+     */
+    compositeOver(bottomColor) {
+        if (!(bottomColor instanceof Color)) {
+            throw new TypeError("color must be instance of Color class");
+        }
+
+        const [rTop, gTop, bTop, aTop] = [... this.#rgb, this.#alpha];
+        const [rBottom, gBottom, bBottom, aBottom] = [... bottomColor.rgb, bottomColor.#alpha];
+
+        const combinedAlpha = aTop + aBottom * (1 - aTop);
+        if (combinedAlpha === 0) return Color.TRANSPARENT;
+
+        return Color.create({
+            rgb: [
+                Math.round((rTop * aTop + rBottom * aBottom * (1 - aTop)) / combinedAlpha),
+                Math.round((gTop * aTop + gBottom * aBottom * (1 - aTop)) / combinedAlpha),
+                Math.round((bTop * aTop + bBottom * aBottom * (1 - aTop)) / combinedAlpha),
+            ],
+            alpha: combinedAlpha
+        });
     }
 
     /**
