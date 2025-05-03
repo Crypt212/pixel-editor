@@ -180,8 +180,8 @@ class PixelLayer {
      * @method
      */
     undo() {
-        let changeBuffers = this.#actionHistory.getActionData();
-        for (let i = changeBuffers.length - 1; i >= 0; i++) {
+        let changeBuffer = this.#actionHistory.getActionData();
+        for (let i = changeBuffer.length - 1; i >= 0; i--) {
             for (let change of changeBuffer[i].beforeStates) {
                 this.setColor(change.x, change.y, change.state, { quietly: true, });
             }
@@ -195,8 +195,8 @@ class PixelLayer {
      */
     redo() {
         this.#actionHistory.redo();
-        let changeBuffers = this.#actionHistory.getActionData();
-        for (let i = 0; i < changeBuffers.length; i++) {
+        let changeBuffer = this.#actionHistory.getActionData();
+        for (let i = 0; i < changeBuffer.length; i++) {
             for (let change of changeBuffer[i].afterStates) {
                 this.setColor(change.x, change.y, change.state, { quietly: true, });
             }
