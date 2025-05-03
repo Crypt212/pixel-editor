@@ -3,7 +3,7 @@
  * Tracks modified pixel regions with ordered history support.
  * Maintains both a Map for order and a Set for duplicate checking.
  */
-class DirtyRectangle {
+class ChangeRegion {
 
     /**
      * Map from pixel positions `${x},${y}` to a change record containing the position and before/after states
@@ -23,16 +23,16 @@ class DirtyRectangle {
         };
 
     /**
-     * Creates a DirtyRectangle instance.
+     * Creates a ChangeRegion instance.
      * @constructor
      */
     constructor() { }
 
     /**
-     * Merges another DirtyRectangle into a copy of this one, and returns it.
+     * Merges another ChangeRegion into a copy of this one, and returns it.
      * @method
-     * @param {DirtyRectangle} source - Source rectangle to merge.
-     * @returns {DirtyRectangle} The result of merging
+     * @param {ChangeRegion} source - Source rectangle to merge.
+     * @returns {ChangeRegion} The result of merging
      */
     merge(source) {
         if (!source || source.isEmpty) return this.clone();
@@ -53,10 +53,10 @@ class DirtyRectangle {
     /**
      * Creates a shallow copy (states are not deep-cloned).
      * @method
-     * @returns {DirtyRectangle} The clone
+     * @returns {ChangeRegion} The clone
      */
     clone() {
-        const copy = new DirtyRectangle({ });
+        const copy = new ChangeRegion({ });
 
         this.#changes.forEach(value => {
             copy.setChange(value.x, value.y, value.after, value.before);
@@ -165,8 +165,8 @@ class DirtyRectangle {
      * @method
      * @returns {Map<string, {x: number, y: number, before: any, after: any}>}
      */
-    get changes() {
-        return this.#changes;
+    get changesMap() {
+        return new Map(this.#changes);
     }
 
     /**
@@ -179,4 +179,4 @@ class DirtyRectangle {
     }
 }
 
-export default DirtyRectangle;
+export default ChangeRegion;
