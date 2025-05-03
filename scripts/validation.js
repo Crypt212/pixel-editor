@@ -44,10 +44,10 @@ export function validateColorArray(color) {
  * Validates the number to be valid number between start and end inclusive.
  * @param {number} number - The number to validate.
  * @param {string} varName - The variable name to show in the error message which will be thrown.
- * @param {Object} Contains some optional constraints: max/min limits, and if the number is integer only
- * @param {number | undefined} start - The minimum of valid range, set to null to omit the constraint.
- * @param {number | undefined} end - The maximum of valid range, set to null to omit the constraint.
- * @param {boolean} integerOnly - Specifies if the number must be an integer.
+ * @param {Object} options - Contains some optional constraints: max/min limits, and if the number is integer only
+ * @param {number | undefined} options.start - The minimum of valid range, set to null to omit the constraint.
+ * @param {number | undefined} options.end - The maximum of valid range, set to null to omit the constraint.
+ * @param {boolean} options.integerOnly - Specifies if the number must be an integer.
  * @throws {TypeError} Throws an error if the number type, name type or options types is invalid.
  * @throws {TypeError} Throws an error if start and end are set but start is higher than end.
  * @throws {RangeError} Throws an error if the number is not in the specified range.
