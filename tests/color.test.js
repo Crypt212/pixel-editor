@@ -128,6 +128,7 @@ describe('Color Class', () => {
             test('should mix colors in RGB space', () => {
                 const purple = red.mix(blue, 0.5, 'rgb');
                 expect(purple.hex).toBe('#800080');
+                expect(purple.alpha).toBe(1);
             });
 
             test('should mix colors in HSL space', () => {
@@ -139,6 +140,18 @@ describe('Color Class', () => {
                 const semiRed = Color.create({ hex: '#ff000080' });
                 const mixed = semiRed.mix(blue, 0.5);
                 expect(mixed.alpha).toBeCloseTo(0.5 * (0.5 + 1));
+            });
+        });
+        describe('compositeOver()', () => {
+            test('should composite colors correctly', () => {
+                const red = Color.create({ rgb: [255, 0, 0], alpha: 0.5 });
+                const blue = Color.create({ rgb: [0, 0, 255], alpha: 0.5 });
+
+                const composite1 = red.compositeOver(blue);
+                expect(composite1.rgb.map(Math.round)).toEqual([170, 0, 85]);
+
+                const composite2 = blue.compositeOver(red);
+                expect(composite2.rgb.map(Math.round)).toEqual([85, 0, 170]);
             });
         });
     });
