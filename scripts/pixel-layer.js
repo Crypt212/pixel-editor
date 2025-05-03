@@ -1,12 +1,13 @@
 import { validateNumber } from "./validation.js";
-import DirtyRectangle from "./dirty-rectangle.js";
+import ActionHistory from "./action-history.js";
+import ChangeRegion from "./change-region.js";
 import Color from "./color.js";
 
 /**
  * Represents a canvas grid system
  * @class
  */
-class CanvasGrid {
+class PixelLayer {
 
     /**
      * The width of the canvas
@@ -19,6 +20,12 @@ class CanvasGrid {
      * @type {number}
      */
     #height;
+
+    /**
+     * The action history system to store main changes
+     * @type {ActionHistory}
+     */
+    #actionHistory = new ActionHistory(64);
 
     /**
      * @typedef Pixel
@@ -35,9 +42,9 @@ class CanvasGrid {
 
     /**
      * Buffer logs changes performed on pixels (Ex. color change)
-     * @type {DirtyRectangle}
+     * @type {ChangeRegion}
      */
-    #changeBuffer = new DirtyRectangle();
+    #changeBuffer = new ChangeRegion();
 
     /**
      * Creates a blank canvas with specified width and height
@@ -59,10 +66,10 @@ class CanvasGrid {
             end: 1024,
             integerOnly: true
         });
-        
+
         this.#width = width;
         this.#height = height;
-        this.#changeBuffer = new DirtyRectangle();
+        this.#changeBuffer = new ChangeRegion();
         this.initializeBlankCanvas(width, height);
     }
 
@@ -99,8 +106,8 @@ class CanvasGrid {
      * @param {ImageData} imageData - The image to be loaded
      * @param {number} [x=0] - X-coordinate
      * @param {number} [y=0] - Y-coordinate
-     * @throws {TypeError} if x or y are not integers
-     * @throws {TypeError} if imageData is not instance of class ImageData
+     * @throws {TypeError} If x or y are not integers
+     * @throws {TypeError} If imageData is not instance of class ImageData
      */
     loadImage(imageData, x = 0, y = 0) {
         validateNumber(x, "x", { integerOnly: true });
@@ -130,7 +137,7 @@ class CanvasGrid {
                 let blue = imageData.data[dist + 2];
                 let alpha = imageData.data[dist + 3];
 
-                this.setColor(j, i, Color.create({rgb: [red, green, blue], alpha: alpha / 255}));
+                this.setColor(j, i, Color.create({ rgb: [red, green, blue], alpha: alpha / 255 }));
             }
         }
     }
@@ -138,12 +145,62 @@ class CanvasGrid {
     /**
      * Resets changes buffer to be empty
      * @method
-     * @returns {DirtyRectangle} Change buffer before emptying
+     * @returns {ChangeRegion} Change buffer before emptying
      */
     resetChangeBuffer() {
         let changeBuffer = this.#changeBuffer;
-        this.#changeBuffer = new DirtyRectangle();
+        this.#changeBuffer = new ChangeRegion();
         return changeBuffer;
+    }
+
+    /**
+     * Creates a new action to the history with given name
+     * @param {string} actionName - The name of the the new action
+     * @method
+     * @throws {TypeError} If actionName is not a string
+     */
+    createAction(actionName) {
+        if (typeof actionName !== "string")
+            throw new TypeError("Action name must be a string");
+
+        this.#actionHistory.addActionGroup(actionName);
+    }
+
+    /**
+     * Commits current buffer to current action in history then resets change buffer
+     * @method
+     */
+    commitChange() {
+        this.#actionHistory.addActionData(this.changeBuffer);
+        this.resetChangeBuffer();
+    }
+
+    /**
+     * Undos an action
+     * @method
+     */
+    undo() {
+        let changeBuffers = this.#actionHistory.getActionData();
+        for (let i = changeBuffers.length - 1; i >= 0; i++) {
+            for (let change of changeBuffer[i].beforeStates) {
+                this.setColor(change.x, change.y, change.state, { quietly: true, });
+            }
+        }
+        this.#actionHistory.undo();
+    }
+
+    /**
+     * Redos an action
+     * @method
+     */
+    redo() {
+        this.#actionHistory.redo();
+        let changeBuffers = this.#actionHistory.getActionData();
+        for (let i = 0; i < changeBuffers.length; i++) {
+            for (let change of changeBuffer[i].afterStates) {
+                this.setColor(change.x, change.y, change.state, { quietly: true, });
+            }
+        }
     }
 
     /**
@@ -155,9 +212,9 @@ class CanvasGrid {
      * @param {Object} options - An object containing additional options.
      * @param {boolean} [options.quietly=false] - If set to true, the pixel data at which color changed will not be pushed to the changeBuffers array.
      * @param {boolean} [options.validate=true] - If set to true, the x, y, and color types are validated.
-     * @throws {TypeError} if validate is true and if color is not a valid Color object
-     * @throws {TypeError} if validate is true and if x and y are not valid integers in valid range.
-     * @throws {RangeError} if validate is true and if x and y are not in valid range.
+     * @throws {TypeError} If validate is true and if color is not a valid Color object
+     * @throws {TypeError} If validate is true and if x and y are not valid integers in valid range.
+     * @throws {RangeError} If validate is true and if x and y are not in valid range.
      */
     setColor(x, y, color, { quietly = false, validate = true } = {}) {
         if (validate) {
@@ -169,7 +226,7 @@ class CanvasGrid {
         }
 
         if (!quietly) {
-            this.#changeBuffer.setChange( x, y,
+            this.#changeBuffer.setChange(x, y,
                 color,
                 this.#pixelMatrix[y][x].color,
             );
@@ -205,7 +262,7 @@ class CanvasGrid {
     /**
      * Returns copy of change buffer
      * @method
-     * @returns {DirtyRectangle} Copy of change buffer
+     * @returns {ChangeRegion} Copy of change buffer
      */
     get changeBuffer() {
         return this.#changeBuffer.clone();
@@ -230,4 +287,4 @@ class CanvasGrid {
     }
 }
 
-export default CanvasGrid;
+export default PixelLayer;
