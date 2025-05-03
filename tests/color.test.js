@@ -2,7 +2,6 @@ import Color from '../scripts/color.js';
 
 describe('Color Class', () => {
     describe('Color Creation', () => {
-
         describe('Constructor Restriction', () => {
             test('should throw when using new Color() directly', () => {
                 expect(() => new Color()).toThrow('Use Color.create() instead');
@@ -28,10 +27,25 @@ describe('Color Class', () => {
                 expect(color.alpha).toBeCloseTo(alpha, 3);
             });
 
+            test('should parse uppercase hex correctly', () => {
+                const color = Color.create({ hex: '#FF00AABB' });
+                expect(color.hex).toBe('#ff00aabb');
+                expect(color.rgb).toEqual([255, 0, 170]);
+                expect(color.alpha).toBeCloseTo(187 / 255, 3);
+            });
+
             test('should return same instance for identical colors', () => {
                 const color1 = Color.create({ rgb: [255, 0, 0] });
                 const color2 = Color.create({ hex: '#ff0000' });
                 expect(color1).toBe(color2); // Same instance
+            });
+
+            test('different representations with same hex share cache', () => {
+                const fromRGB = Color.create({ rgb: [255, 0, 0] });
+                const fromHSL = Color.create({ hsl: [0, 100, 50] });
+                const fromHex = Color.create({ hex: '#ff0000' });
+                expect(fromRGB).toBe(fromHSL);
+                expect(fromHSL).toBe(fromHex);
             });
         });
 
@@ -47,6 +61,11 @@ describe('Color Class', () => {
                 ${{}}                             | ${TypeError} | ${'no config'}
             `('throws $errorType.name when $description', ({ config, errorType }) => {
                 expect(() => Color.create(config)).toThrow(errorType);
+            });
+
+            test('throws correct error message for invalid hex', () => {
+                expect(() => Color.create({ hex: 'invalid' }))
+                    .toThrow('Invalid hex color format: invalid');
             });
         });
     });
@@ -77,6 +96,12 @@ describe('Color Class', () => {
                 const newColor = color.withHSL({ h: 120 });
                 expect(newColor.hex).toBe('#00ff00');
             });
+
+            test('correctly rounds HSL conversion to RGB', () => {
+                const color = Color.create({ hsl: [180, 50, 50] });
+                // Expected RGB from HSL(180,50%,50%) ≈ [64, 191, 191]
+                expect(color.rgb).toEqual([64, 191, 191]);
+            });
         });
 
         describe('withAlpha()', () => {
@@ -85,6 +110,23 @@ describe('Color Class', () => {
                 expect(newColor.hex).toBe('#ff000080');
                 expect(color.alpha).toBe(1);
             });
+
+            test('handles alpha at 0 and 1 extremes', () => {
+                const alpha0 = color.withAlpha(0);
+                const alpha1 = color.withAlpha(1);
+                expect(alpha0.alpha).toBe(0);
+                expect(alpha1.alpha).toBe(1);
+            });
+        });
+
+        test('color instances are immutable', () => {
+            expect(Object.isFrozen(color)).toBe(true);
+            expect(() => { color.newProp = 123 }).toThrow();
+        });
+
+        test('toString omits alpha when fully opaque', () => {
+            const color = Color.create({ hex: '#aabbccff' });
+            expect(color.toString()).toBe('#aabbcc');
         });
     });
 
@@ -117,6 +159,13 @@ describe('Color Class', () => {
                 const c2 = Color.create({ hex: color2 });
                 expect(c1.isEqualTo(c2, includeAlpha)).toBe(expected);
             });
+
+            test('caches colors with similar alphas as same instance', () => {
+                const color1 = Color.create({ rgb: [255, 0, 0], alpha: 0.5 });
+                const color2 = Color.create({ rgb: [255, 0, 0], alpha: 0.5000001 });
+                expect(color1).toBe(color2);
+                expect(color1.hex).toBe('#ff000080');
+            });
         });
     });
 
@@ -136,12 +185,32 @@ describe('Color Class', () => {
                 expect(magenta.hex).toBe('#ff00ff');
             });
 
-            test('should mix alpha channels', () => {
-                const semiRed = Color.create({ hex: '#ff000080' });
-                const mixed = semiRed.mix(blue, 0.5);
-                expect(mixed.alpha).toBeCloseTo(0.5 * (0.5 + 1));
+            test('mixes HSL hues with wrapping correctly', () => {
+                const color1 = Color.create({ hsl: [350, 100, 50] }); // ~red
+                const color2 = Color.create({ hsl: [10, 100, 50] });  // ~red
+                const mixed = color1.mix(color2, 0.5, 'hsl');
+                expect(mixed.hsl[0]).toBeCloseTo(0, 0);
+                expect(mixed.hex).toBe('#ff0000');
+            });
+
+            test('mixing with weight 0 returns original color', () => {
+                const mixed = red.mix(blue, 0);
+                expect(mixed.isEqualTo(red)).toBe(true);
+            });
+
+            test('mixing with weight 1 returns second color', () => {
+                const mixed = red.mix(blue, 1);
+                expect(mixed.isEqualTo(blue)).toBe(true);
+            });
+
+            test('mixes alpha values correctly', () => {
+                const semiTransparent = Color.create({ hex: '#ff000080' });
+                const opaque = Color.create({ hex: '#0000ff' });
+                const mixed = semiTransparent.mix(opaque, 0.5);
+                expect(mixed.alpha).toBeCloseTo(0.75);
             });
         });
+
         describe('compositeOver()', () => {
             test('should composite colors correctly', () => {
                 const red = Color.create({ rgb: [255, 0, 0], alpha: 0.5 });
@@ -152,6 +221,24 @@ describe('Color Class', () => {
 
                 const composite2 = blue.compositeOver(red);
                 expect(composite2.rgb.map(Math.round)).toEqual([85, 0, 170]);
+            });
+
+            test('composites correctly over transparent color', () => {
+                const topColor = Color.create({ rgb: [255, 0, 0], alpha: 0.5 });
+                const composite = topColor.compositeOver(Color.TRANSPARENT);
+                expect(composite.isEqualTo(topColor)).toBe(true);
+            });
+
+            test('fully transparent color composites as invisible', () => {
+                const transparentRed = Color.create({ rgb: [255, 0, 0], alpha: 0 });
+                const composite = transparentRed.compositeOver(Color.create({ hex: '#0000ff' }));
+                expect(composite.isEqualTo(Color.create({ hex: '#0000ff' }))).toBe(true);
+            });
+
+            test('compositing fully opaque color over any color returns top color', () => {
+                const opaqueRed = Color.create({ hex: '#ff0000' });
+                const anyColor = Color.create({ hex: '#00ff00' });
+                expect(opaqueRed.compositeOver(anyColor)).toBe(opaqueRed);
             });
         });
     });
@@ -201,19 +288,17 @@ describe('Color Class', () => {
         });
 
         test('cache should handle different color spaces', () => {
-            const color1 = Color.create({ rgb: [255, 0, 0] });
-            const color2 = Color.create({ hsl: [0, 100, 50] });
-            const color3 = Color.create({ hex: '#ff0000' });
-
-            expect(color1).toBe(color2);
-            expect(color2).toBe(color3);
+            const fromRGB = Color.create({ rgb: [255, 0, 0] });
+            const fromHSL = Color.create({ hsl: [0, 100, 50] });
+            const fromHex = Color.create({ hex: '#ff0000' });
+            expect(fromRGB).toBe(fromHSL);
+            expect(fromHSL).toBe(fromHex);
             expect(Color.cacheSize).toBe(2);
         });
 
         test('cache should distinguish different alphas', () => {
             const color1 = Color.create({ rgb: [255, 0, 0], alpha: 0.5 });
             const color2 = Color.create({ rgb: [255, 0, 0], alpha: 1 });
-
             expect(color1).not.toBe(color2);
             expect(Color.cacheSize).toBe(3);
         });
