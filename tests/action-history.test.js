@@ -100,7 +100,7 @@ describe("ActionHistory", () => {
             expect(ah.getActionData(0)).toEqual(["test", 42]);
         });
 
-        test("should shallow copy objects and arrays", () => {
+        test("should take reference of data stored in it (they are be shared)", () => {
             const testObj = { a: 1 };
             const testArr = [1, 2, 3];
 
@@ -110,9 +110,9 @@ describe("ActionHistory", () => {
 
             const storedData = ah.getActionData(0);
             expect(storedData[0]).toEqual(testObj);
-            expect(storedData[0]).not.toBe(testObj);
+            expect(storedData[0]).toBe(testObj);
             expect(storedData[1]).toEqual(testArr);
-            expect(storedData[1]).not.toBe(testArr);
+            expect(storedData[1]).toBe(testArr);
         });
     });
 
