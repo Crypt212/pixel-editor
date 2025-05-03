@@ -12,14 +12,14 @@ import { validateNumber } from "./validation.js";
  * - Action metadata (names/IDs)
  * 
  * @example
- * const history = new HistorySystem(10);
+ * const history = new ActionHistory(10);
  * history.addActionGroup("Paint");
  * history.addActionData({x: 1, y: 2, color: "#FF0000"});
  * history.undo(); // Reverts to previous state
  * 
  * @class
  */
-class HistorySystem {
+class ActionHistory {
 
     /**
      * Internal circular buffer storing action groups
@@ -57,7 +57,7 @@ class HistorySystem {
     #actionGroupIDCounter = -1;
 
     /**
-     * Creates a new HistorySystem with specified capacity
+     * Creates a new ActionHistory with specified capacity
      * @constructor
      * @param {number} capacity - Maximum stored action groups (1-64)
      * @throws {TypeError} If capacity is not an integer
@@ -267,4 +267,4 @@ class HistorySystem {
     }
 }
 
-export default HistorySystem;
+export default ActionHistory;
