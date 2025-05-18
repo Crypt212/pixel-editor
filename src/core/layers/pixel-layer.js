@@ -73,9 +73,6 @@ class PixelLayer {
             integerOnly: true
         });
 
-        this.#width = width;
-        this.#height = height;
-        this.#changeBuffer = new ChangeRegion();
         this.initializeBlankCanvas(width, height);
     }
 
@@ -143,7 +140,19 @@ class PixelLayer {
                 let blue = imageData.data[dist + 2];
                 let alpha = imageData.data[dist + 3];
 
-                this.setColor(j, i, Color.create({ rgb: [red, green, blue], alpha: alpha / 255 }), { quietly: true });
+                this.setColor(j, i, Color.create({ rgb: [red, green, blue], alpha: alpha / 255 }), { validate: false });
+            }
+        }
+    }
+
+    /**
+     * Clears the layer 
+     * @method
+     */
+    clear() {
+        for ( let i = 0; i < this.#height; i++) {
+            for ( let j = 0; j < this.#width; j++) {
+                this.setColor(j, i, Color.TRANSPARENT, { validate: false });
             }
         }
     }
@@ -160,13 +169,12 @@ class PixelLayer {
     }
 
     /**
-     * Starts a new action into the history with given name and timeout protection
+     * Starts a new action into the history with given name
      * @param {string} actionName - The name 
-     * @param {number} [timeoutMs=30000] of the the new action
      * @method
      * @throws {TypeError} If actionName is not a string
      */
-    startAction(actionName, timeoutMs = 30000) {
+    startAction(actionName) {
         if (typeof actionName !== "string")
             throw new TypeError("Action name must be a string");
 
@@ -175,9 +183,6 @@ class PixelLayer {
         this.#history.setRecordData({
             name: actionName,
             start: Date.now(),
-            timeout: setTimeout(() => {
-                if (this.isInAction) this.cancelAction();
-            }, timeoutMs),
             change: new ChangeRegion(),
             steps: [],
         });
@@ -195,9 +200,9 @@ class PixelLayer {
 
         const record = this.#history.getRecordData();
 
-        if (currentBuffer.isEmpty) return;
+        if (this.#changeBuffer.isEmpty) return;
 
-        if (record.steps.length === 10 || this.changeBuffer.length >= 100) {
+        if (record.steps.length === 10 || this.#changeBuffer.length >= 100) {
             record.steps.reduce((acc, st) => acc.mergeInPlace(st), record.change);
             record.steps = [];
         }
@@ -245,7 +250,7 @@ class PixelLayer {
 
         // Apply before states
         for (const change of record.change.beforeStates) {
-            this.setColor(change.x, change.y, change.state, { quietly: true });
+            this.setColor(change.x, change.y, change.state, { quietly: true, validate: false });
         }
 
         this.#history.undo();
@@ -271,7 +276,7 @@ class PixelLayer {
         }
 
         for (const change of record.change.afterStates) {
-            this.setColor(change.x, change.y, change.state, { quietly: true });
+            this.setColor(change.x, change.y, change.state, { quietly: true, validate: false });
         }
     }
 
