@@ -1,4 +1,4 @@
-import ChangeRegion from './../scripts/change-region.js';
+import ChangeRegion from '#services/change-region.js';
 
 describe('ChangeRegion', () => {
 
@@ -159,6 +159,17 @@ describe('ChangeRegion', () => {
 
                 let merge = cr1.merge(cr2);
                 expect(merge.bounds).toEqual({ x0: 0, y0: 0, x1: 5, y1: 5 });
+            });
+
+            test('should merge into the calling object without creating new one if called in-place merge', () => {
+                const cr1 = new ChangeRegion();
+                cr1.setChange(0, 0, 'state');
+
+                const cr2 = new ChangeRegion();
+                cr2.setChange(5, 5, 'state');
+
+                cr1.mergeInPlace(cr2);
+                expect(cr1.bounds).toEqual({ x0: 0, y0: 0, x1: 5, y1: 5 });
             });
         });
     });
