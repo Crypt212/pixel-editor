@@ -1,6 +1,5 @@
 import { validateNumber } from "#utils/validation.js";
 import History from "#services/history.js";
-// import Layer from "#core/layers/base-layer.js";
 import Color from "#services/color.js";
 import ChangeRegion from "#services/change-region.js";
 
