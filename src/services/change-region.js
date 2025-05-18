@@ -29,24 +29,34 @@ class ChangeRegion {
     constructor() { }
 
     /**
-     * Merges another ChangeRegion into a copy of this one, and returns it.
+     * Merges another ChangeRegion into this one (mutates this object).
      * @method
-     * @param {ChangeRegion} source - Source rectangle to merge.
-     * @returns {ChangeRegion} The result of merging
+     * @param {ChangeRegion} source - Source ChangeRegion to merge.
+     * @returns {ChangeRegion} This instance (for chaining)
      */
-    merge(source) {
-        if (!source || source.isEmpty) return this.clone();
-
-        const result = this.clone();
+    mergeInPlace(source) {
+        if (!source || source.isEmpty) return this;
 
         source.#changes.forEach((change) => {
-            result.setChange(
+            this.setChange(
                 change.x,
                 change.y,
                 change.after,
                 change.before,
             );
         });
+        return this;
+    }
+
+    /**
+     * Merges another ChangeRegion into a copy of this one, and returns it.
+     * @method
+     * @param {ChangeRegion} source - Source rectangle to merge.
+     * @returns {ChangeRegion} The result of merging
+     */
+    merge(source) {
+        const result = this.clone();
+        result.mergeInPlace(source);
         return result;
     }
 
@@ -176,6 +186,15 @@ class ChangeRegion {
      */
     get bounds() {
         return { ...this.#bounds };
+    }
+
+    /**
+     * Returns number of changes
+     * @method
+     * @returns {number}
+     */
+    get length() {
+        return this.#changes.size;
     }
 }
 
