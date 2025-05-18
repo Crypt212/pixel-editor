@@ -1,7 +1,8 @@
-import { validateNumber } from "./validation.js";
-import ActionHistory from "./action-history.js";
-import ChangeRegion from "./change-region.js";
-import Color from "./color.js";
+import { validateNumber } from "#utils/validation.js";
+import History from "#services/history.js";
+// import Layer from "#core/layers/base-layer.js";
+import Color from "#services/color.js";
+import ChangeRegion from "#services/change-region.js";
 
 /**
  * Represents a canvas grid system
@@ -22,10 +23,16 @@ class PixelLayer {
     #height;
 
     /**
-     * The action history system to store main changes
-     * @type {ActionHistory}
+     * Current used action
+     * @type {boolean}
      */
-    #actionHistory = new ActionHistory(64);
+    #inAction = false;
+
+    /**
+     * The action history system to store main changes
+     * @type {History}
+     */
+    #history = new History(64);
 
     /**
      * @typedef Pixel
@@ -137,7 +144,7 @@ class PixelLayer {
                 let blue = imageData.data[dist + 2];
                 let alpha = imageData.data[dist + 3];
 
-                this.setColor(j, i, Color.create({ rgb: [red, green, blue], alpha: alpha / 255 }));
+                this.setColor(j, i, Color.create({ rgb: [red, green, blue], alpha: alpha / 255 }), { quietly: true });
             }
         }
     }
@@ -154,25 +161,70 @@ class PixelLayer {
     }
 
     /**
-     * Creates a new action to the history with given name
-     * @param {string} actionName - The name of the the new action
+     * Starts a new action into the history with given name and timeout protection
+     * @param {string} actionName - The name 
+     * @param {number} [timeoutMs=30000] of the the new action
      * @method
      * @throws {TypeError} If actionName is not a string
      */
-    createAction(actionName) {
+    startAction(actionName, timeoutMs = 30000) {
         if (typeof actionName !== "string")
             throw new TypeError("Action name must be a string");
 
-        this.#actionHistory.addActionGroup(actionName);
+        if (this.#inAction) this.endAction();
+        this.#history.addRecord();
+        this.#history.setRecordData({
+            name: actionName,
+            start: Date.now(),
+            timeout: setTimeout(() => {
+                if (this.isInAction) this.cancelAction();
+            }, timeoutMs),
+            change: new ChangeRegion(),
+            steps: [],
+        });
+        this.#inAction = true;
     }
 
     /**
-     * Commits current buffer to current action in history then resets change buffer
+     * Commits current pixel buffer to current action in history then resets change buffer
+     * @method
+     * @throws {Error} If no active action exists
+     */
+    addActionStep() {
+        if (!this.#history.getRecordData())
+            throw new Error("No active action to add step to");
+
+        const record = this.#history.getRecordData();
+
+        if (currentBuffer.isEmpty) return;
+
+        if (record.steps.length === 10 || this.changeBuffer.length >= 100) {
+            record.steps.reduce((acc, st) => acc.mergeInPlace(st), record.change);
+            record.steps = [];
+        }
+
+        this.#history.getRecordData().steps.push(this.#changeBuffer);
+
+        this.resetChangeBuffer();
+    }
+
+    /**
+     * Ends the current action in the history
      * @method
      */
-    commitChange() {
-        this.#actionHistory.addActionData(this.changeBuffer);
-        this.resetChangeBuffer();
+    endAction() {
+        if (!this.isInAction) return;
+        this.#inAction = false;
+    }
+
+    /**
+     * Cancels the current action in the history
+     * @method
+     */
+    cancelAction() {
+        if (!this.isInAction) return;
+        this.endAction();
+        this.undo();
     }
 
     /**
@@ -180,13 +232,24 @@ class PixelLayer {
      * @method
      */
     undo() {
-        let changeBuffer = this.#actionHistory.getActionData();
-        for (let i = changeBuffer.length - 1; i >= 0; i--) {
-            for (let change of changeBuffer[i].beforeStates) {
-                this.setColor(change.x, change.y, change.state, { quietly: true, });
-            }
+        this.cancelAction();
+
+        if (this.#history.isStart) return;
+
+        const record = this.#history.getRecordData();
+
+        // If not already merged, merge and cache it
+        if (record.steps.length !== 0) {
+            record.steps.reduce((acc, st) => acc.mergeInPlace(st), record.change);
+            record.steps = [];
         }
-        this.#actionHistory.undo();
+
+        // Apply before states
+        for (const change of record.change.beforeStates) {
+            this.setColor(change.x, change.y, change.state, { quietly: true });
+        }
+
+        this.#history.undo();
     }
 
     /**
@@ -194,12 +257,22 @@ class PixelLayer {
      * @method
      */
     redo() {
-        this.#actionHistory.redo();
-        let changeBuffer = this.#actionHistory.getActionData();
-        for (let i = 0; i < changeBuffer.length; i++) {
-            for (let change of changeBuffer[i].afterStates) {
-                this.setColor(change.x, change.y, change.state, { quietly: true, });
-            }
+        this.cancelAction();
+
+        if (this.#history.isEnd) return;
+
+        this.#history.redo();
+
+        const record = this.#history.getRecordData();
+
+        // If not already merged, merge and cache it
+        if (record.steps.length !== 0) {
+            record.steps.reduce((acc, st) => acc.mergeInPlace(st), record.change);
+            record.steps = [];
+        }
+
+        for (const change of record.change.afterStates) {
+            this.setColor(change.x, change.y, change.state, { quietly: true });
         }
     }
 
@@ -212,20 +285,23 @@ class PixelLayer {
      * @param {Object} options - An object containing additional options.
      * @param {boolean} [options.quietly=false] - If set to true, the pixel data at which color changed will not be pushed to the changeBuffers array.
      * @param {boolean} [options.validate=true] - If set to true, the x, y, and color types are validated.
-     * @throws {TypeError} If validate is true and if color is not a valid Color object
-     * @throws {TypeError} If validate is true and if x and y are not valid integers in valid range.
+     * @throws {TypeError} If validate is true and color is not a valid Color object
+     * @throws {TypeError} If validate is true and x and y are not valid integers in valid range.
      * @throws {RangeError} If validate is true and if x and y are not in valid range.
+     * @throws {Error} If not quiet when no action is active
      */
     setColor(x, y, color, { quietly = false, validate = true } = {}) {
         if (validate) {
             validateNumber(x, "x", { start: 0, end: this.#width - 1, integerOnly: true });
             validateNumber(y, "y", { start: 0, end: this.#height - 1, integerOnly: true });
             if (!(color instanceof Color)) {
-                throw new Error("color must be object of Color class");
+                throw new TypeError("color must be object of Color class");
             }
         }
 
         if (!quietly) {
+            if (!this.isInAction)
+                throw new Error("Cannot set color outside of an action");
             this.#changeBuffer.setChange(x, y,
                 color,
                 this.#pixelMatrix[y][x].color,
@@ -284,6 +360,15 @@ class PixelLayer {
      */
     get height() {
         return this.#height;
+    }
+
+    /**
+     * Returns whether an action is active
+     * @method
+     * @returns {boolean} Whether an action is active
+     */
+    get isInAction() {
+        return this.#inAction;
     }
 }
 
