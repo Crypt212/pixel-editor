@@ -4,7 +4,10 @@
     "@babel/register": "^7.25.9",
     "canvas": "^2.11.2",
     "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0"
+    "jest-environment-jsdom": "^29.7.0",
+    "prettier": "^3.5.3",
+    "tsc-alias": "^1.8.16",
+    "vite": "^6.3.5"
   },
   "name": "pixeleditor",
   "version": "1.0.0",
@@ -75,6 +78,7 @@
     "hasown": "^2.0.2",
     "html-escaper": "^2.0.2",
     "human-signals": "^2.1.0",
+    "husky": "^9.1.7",
     "import-local": "^3.2.0",
     "imurmurhash": "^0.1.4",
     "inflight": "^1.0.6",
@@ -124,6 +128,7 @@
     "kleur": "^3.0.3",
     "leven": "^3.1.0",
     "lines-and-columns": "^1.2.4",
+    "lint-staged": "^15.5.0",
     "locate-path": "^5.0.0",
     "lru-cache": "^5.1.1",
     "make-dir": "^4.0.0",
@@ -199,7 +204,11 @@
     "yocto-queue": "^0.1.0"
   },
   "scripts": {
-    "test": "jest --verbose"
+    "build": "tsc && tsc-alias",
+    "dev": "tsc --watch & tsc-alias --watch",
+    "format": "prettier --write .",
+    "test": "jest --verbose",
+    "preview": "vite preview"
   },
   "jest": {
     "collectCoverage": true,
@@ -216,5 +225,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "module"
 }

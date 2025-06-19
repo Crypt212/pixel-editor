@@ -25,4 +25,5 @@
 canvas {
     image-rendering: pixelated;
     position: absolute;
+    transition: 0.5s;
 }
