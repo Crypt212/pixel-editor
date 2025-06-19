@@ -1,1 +1,1 @@
-import {validateNumber, validateColorArray} from "../scripts/validation.js";
+import {validateNumber, validateColorArray} from "#utils/validation.js";

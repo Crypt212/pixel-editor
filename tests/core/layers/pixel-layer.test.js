@@ -68,6 +68,15 @@ describe("PixelLayer", () => {
             layer.setColor(1, 1, color2);
             expect(layer.getColor(0, 0)).toBe(layer.getColor(1, 1));
         });
+
+        test.only("should clear pixels", () => {
+            layer.setColor(0, 0, testColor);
+            expect(layer.changeBuffer.afterStates).toHaveLength(1);
+            expect(layer.getColor(0, 0)).toEqual(testColor);
+            layer.clear();
+            expect(layer.changeBuffer.afterStates).toHaveLength(2);
+            expect(layer.getColor(0, 0)).toEqual(Color.TRANSPARENT);
+        });
     });
 
     describe("Change Tracking", () => {

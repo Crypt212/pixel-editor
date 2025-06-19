@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "outDir": "dist",
+        "rootDir": "src",
+        "module": "node16",
+        "noEmitOnError": true,
+        "paths": {
+            "@src/*": ["./src/*"]
+        }
+    }
+}
