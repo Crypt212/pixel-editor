@@ -1,34 +1,76 @@
 import { validateNumber } from "@src/utils/validation.js";
 import LayerManager from "@src/core/managers/layer-manager.js";
 import ToolManager from "@src/core/managers/tool-manager.js";
-import EventBus from "@src/services/event-bus.js";
 import Canvas from "@src/core/ui-components/canvas.js";
 import { PixelRectangleBounds } from "@src/types/pixel-types.js";
+import DualColorSelector from "./ui-components/dual-selector.js";
+import ColorPalette from "./ui-components/color-palette.js";
+import { AppEventEmitter, AppEvents } from "@src/core/events.js";
+import EventEmitter from "@src/services/event-emitter.js";
+import ToolBar from "./ui-components/tool-bar.js";
 
 /**
  * Responsible for managing events and functionalities of the canvas element inside its container
  * @class
  */
 class PixelEditor {
-    layerManager: LayerManager;
-    toolManager: ToolManager;
-    width: number;
-    height: number;
-    canvas: Canvas;
-    events: EventBus;
+    private layerManager: LayerManager;
+    private toolManager: ToolManager;
+    private width: number;
+    private height: number;
+    private canvas: Canvas;
+
+    private dualSelector: DualColorSelector;
+    private colorPalette: ColorPalette;
+    private toolBar: ToolBar;
+
+    private events: AppEventEmitter = new EventEmitter<AppEvents>();
 
     /**
      * Creates a canvas elements inside the given container and initializes it with width and height
      * @constructor
+     * @param htmlComponents - Group of all UI controlling components
+     * @param htmlComponents.canvasContainer - The DOM Element that will contain the canvas
+     * @param htmlComponents.paletteContainer - The DOM Element that will contain the color palette
+     * @param htmlComponents.dualSelector - The DOM Element that will contain the color index
      * @param width - Integer represents the width of the canvas, range is [0, 1024] inclusive
      * @param height - Integer represents the height of the canvas, range is [0, 1024] inclusive
-     * @param {HTMLElement} containerElement - The DOM Element that will contain the canvas
      * @throws {TypeError} if the width or the height are not valid integers
      * @throws {RangeError} if the width or the height are not in valid ranges
      */
-    constructor(containerElement: HTMLElement, width: number, height: number) {
-        this.events = new EventBus();
-        this.canvas = new Canvas(containerElement, this.events);
+    constructor({
+        canvasContainer,
+        paletteContainer,
+        dualSelector,
+        toolContainer,
+    }: {
+        canvasContainer: HTMLElement,
+        paletteContainer: HTMLElement,
+        dualSelector: HTMLElement,
+        toolContainer: HTMLElement,
+    }, width: number, height: number) {
+        this.canvas = new Canvas(canvasContainer, this.events);
+        this.colorPalette = new ColorPalette(paletteContainer, this.events);
+        this.dualSelector = new DualColorSelector(dualSelector, this.events);
+        this.toolBar = new ToolBar(toolContainer, this.events);
+
+        this.toolManager = new ToolManager({
+            drawing: {
+                activeLayer: null,
+                previewLayer: null,
+                color: this.dualSelector.color,
+                size: 1,
+            }
+        }, {
+            line: {},
+            pencil: { drawShape: "round" },
+            eraser: { eraseShape: "round" },
+            bucket: { tolerance: 1 }
+        });
+        this.toolManager.getToolNames().forEach(val => {
+            this.toolBar.addTool(val);
+        });
+
         this.createBlankBoard(width, height);
         this.setupEvents();
     }
@@ -53,7 +95,8 @@ class PixelEditor {
         this.layerManager = new LayerManager(width, height);
         this.layerManager.add("Background");
 
-        this.toolManager = new ToolManager(this.layerManager.activeLayer);
+        this.toolManager.serviceConfigs.drawing.activeLayer = this.layerManager.activeLayer;
+        this.toolManager.serviceConfigs.drawing.previewLayer = this.layerManager.previewLayer;
     }
 
     /**
@@ -97,25 +140,44 @@ class PixelEditor {
     }
 
     setupEvents() {
-        this.events.on("tool:use", () => {
-            this.toolManager.selectedTool = this.toolManager.tools.get("pen");
+        this.events.on("dual-selector:colors-switched", () => {
+            this.toolManager.serviceConfigs.drawing.color = this.dualSelector.switchColors();
         });
-        this.events.on("canvas:mousemove", ({ coordinates }) => {
-            const bounds = this.toolManager.selectedTool.mouseMove(coordinates);
-            if (bounds) this.render();
+
+        this.events.on("dual-selector:colors-swapped", () => {
+            this.toolManager.serviceConfigs.drawing.color = this.dualSelector.swapColors();
         });
-        this.events.on("canvas:mousedown", ({ coordinates }) => {
-            const bounds = this.toolManager.selectedTool.mouseDown(coordinates);
-            console.log(coordinates, bounds);
-            if (bounds) this.render();
+
+        this.events.on("dual-selector:colors-reset", () => {
+            this.toolManager.serviceConfigs.drawing.color = this.dualSelector.resetColors();
         });
-        this.events.on("canvas:mouseup", ({ coordinates }) => {
-            const bounds = this.toolManager.selectedTool.mouseUp(coordinates);
-            if (bounds) this.render();
+
+        this.events.on("palette:color-chose", ({ color }) => {
+            this.dualSelector.setColor(color);
+            this.toolManager.serviceConfigs.drawing.color = color;
         });
-        // events.on("tool:apply-action", (actionName: string, change: PixelChanges, reapply: boolean, preview: boolean) => {
-        //     this.selectedTool.applyAction(actionName, change, reapply, preview);
-        // });
+
+        this.events.on("palette:color-added", ({ color }) => {
+            this.colorPalette.addColor(color);
+        });
+
+        this.events.on("tool-bar:tool-selected", ({ toolName }) => {
+            this.toolManager.setTool(toolName);
+        });
+
+        this.events.on("canvas:interacted", ({ event }) => {
+            this.toolManager.useTool(event);
+            this.render();
+        });
+
+        this.events.on("canvas:undone", ({ }) => {
+            this.layerManager.activeLayer.undo();
+            this.render();
+        });
+        this.events.on("canvas:redone", ({ }) => {
+            this.layerManager.activeLayer.redo();
+            this.render();
+        });
     }
 }
 

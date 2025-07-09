@@ -13,7 +13,7 @@
     user-select: none;
 }
 
-.palette-container {
+#palette-container {
     display: grid;
     grid-gap: 0.25em;
 }
@@ -44,7 +44,7 @@
 
 /* wider than tablets */
 @media (min-width: 900px) {
-    .palette-container {
+    #palette-container {
         grid-template-columns: repeat(5, 1fr);
         grid-template-rows: repeat(6, 1fr);
 
@@ -54,7 +54,7 @@
 
 /* tablets */
 @media (min-width: 600px) and (max-width: 900px) {
-    .palette-container {
+    #palette-container {
         grid-template-columns: repeat(4, 1fr);
         grid-template-rows: repeat(7, 1fr);
 

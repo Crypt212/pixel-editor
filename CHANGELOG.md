@@ -1,16 +1,15 @@
 # Changelog
 
-## [v0.5.0] - 2023-08-20
-### Added
-- History system with undo/redo
-- Pencil, eraser, line, and bucket tools
-- Renewed structure of the project andd add `#` imports
+## [v1.0.0] - 2025-7-10
 
 ### Changed
-- Optimized action cancellation (5x faster) and reduced memory usage in pixel layer by 30%
+- Codebase conversion to Typescript enforcing strict typing and code maintainability
+- History and change systems converted to generic types
+- Pixel layer refactored endAction and cancelAction methods to delete action if empty. cancelAction method does not commit when cancelling 
 
-## [Unreleased]
+
 ### Added
-
-- Tool management (WIP)
-- Layer support (WIP)
+- Scalable tool services system allowing extensible tool variations
+- Pencil Tool, Line Tool, Eraser Tool, Bucket Tool
+- Preview layer to layer manager for showing preview of what will be painted
+- Event emitting system for tool services with UI events

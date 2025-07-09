@@ -26,4 +26,5 @@ canvas {
     image-rendering: pixelated;
     position: absolute;
     transition: 0.5s;
+    border: 0.3em var(--white) solid;
 }
