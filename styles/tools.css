@@ -32,8 +32,8 @@
     align-items: center;
 
     background-color: var(--white);
+    /* background-color: transparent; */
     border: 0.18em var(--white) solid;
-    box-shadow: 0.25em 0.25em var(--shadow);
     
     aspect-ratio: 1 / 1;
     width: 2.5em;
@@ -44,4 +44,6 @@
 
 .tools > div > * {
     font-size: 1.3em;
+    transform: scale(2);
+    image-rendering: pixelated;
 }

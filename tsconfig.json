@@ -5,8 +5,11 @@
         "rootDir": "src",
         "module": "node16",
         "noEmitOnError": true,
+        "sourceMap": true,
         "paths": {
-            "@src/*": ["./src/*"]
+            "@src/*": [
+                "./src/*"
+            ]
         }
     }
 }

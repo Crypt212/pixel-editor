@@ -1,27 +1,30 @@
-:root {
-    --black: #020202;
-    --light-black: #1e1e1e;
-    --lighter-black: #2e2e2e;
-    --white: #eaeaea;
-    --dark-white: #c8c8c8;
-    --darker-white: #a6a6a6;
-    --shadow: #020202a2;
-}
+    @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap');
 
-* {
-    margin: 0;
-    box-sizing: border-box;
-}
+    :root {
+        --black: #020202;
+        --light-black: #1e1e1e;
+        --lighter-black: #2e2e2e;
+        --white: #eaeaea;
+        --dark-white: #c8c8c8;
+        --darker-white: #a6a6a6;
+        --shadow: #020202a2;
+        font-family: "Pixelify Sans", sans-serif;
+    }
 
-.btn {
-    user-select: none;
-    transition: 0.3s;
-}
+    * {
+        margin: 0;
+        box-sizing: border-box;
+    }
 
-.btn:hover {
-    transform: scale(1.1);
-}
+    .btn {
+        user-select: none;
+        transition: 0.3s;
+    }
 
-.btn:active {
-    transform: scale(0.9);
-}
+    .btn:hover {
+        transform: scale(1.1);
+    }
+
+    .btn:active {
+        transform: scale(0.9);
+    }

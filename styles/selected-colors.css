@@ -1,4 +1,4 @@
-#user-color {
+#user-colors {
     align-self: end;
     transform: scale(0.8);
 
@@ -20,7 +20,7 @@
 @media (max-width: 600px) {
 }
 
-#user-color > .color-index {
+#user-colors > .color-index {
     border: 0.28em white solid;
     box-shadow: 0.25em 0.25em #020202a2;
     filter: brightness(0.7);
@@ -33,7 +33,7 @@
     user-select: none;
 }
 
-#user-color > .swap-colors {
+#user-colors > .swap-colors {
     position: absolute;
     top: -1.0em;
     left: 5.0em;
@@ -47,7 +47,7 @@
     user-select: none;
 }
 
-#user-color > .reset-colors {
+#user-colors > .reset-colors {
     position: absolute;
     left: -1.0em;
     top: 5.0em;
@@ -61,18 +61,18 @@
     user-select: none;
 }
 
-#user-color > .color-index.primary {
+#user-colors > .color-index.primary {
     top: 0;
     left: 0;
 }
 
-#user-color > .color-index {
+#user-colors > .color-index {
     top: 1.5em;
     left: 1.5em;
 }
 
 
-#user-color > .color-index.selected {
+#user-colors > .color-index.selected {
     z-index: 1;
 
     box-shadow: 0.3em 0.3em #020202a2;
@@ -83,7 +83,7 @@
     transform: scale(1.2);
 }
 
-#user-color > .add-color {
+#user-colors > .add-color {
     position: absolute;
     top: 36%;
     left: 85%;
