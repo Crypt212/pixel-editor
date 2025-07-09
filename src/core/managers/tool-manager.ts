@@ -1,131 +1,80 @@
-import Color from "@src/services/color.js";
-import Tool from "@src/core/tools/base/tool-base.js";
-import PenTool from "../tools/implementations/pen-tool.js";
+import { EditorEvents } from "@src/types/ui-events.js";
+import { ITool } from "../tools/intefaces/tool.js";
+import EraserTool from "../tools/implementations/eraser-tool.js";
+import BucketTool from "../tools/implementations/bucket-tool.js";
+import { IServiceConfigurations, IToolConfigurations } from "../tools/intefaces/config.js";
+import LineTool from "../tools/implementations/line-tool.js";
+import PencilTool from "../tools/implementations/pencil-tool.js";
 
-import Historyable from "@src/interfaces/historyable.js";
-import Drawable from "@src/interfaces/drawable.js";
-import { validateNumber } from "@src/utils/validation.js";
+export type ToolName = keyof IToolConfigurations;
+export type ConfigName = keyof (IServiceConfigurations & IToolConfigurations);
 
 /**
  * Class for managing the canvas tools and their functionalities
  * @class
  */
 export default class ToolManager {
-    private drawColor: Color;
-    private eraseColor: Color;
-    private drawSize: number;
-    private eraseSize: number;
-    selectedTool: Tool;
-    tools: Map<string, Tool>;
-    drawingColor: Color = Color.get({ hex: "#0f0" });
-    eraserColor: Color = Color.get({ hex: "#0000" });
+    private tool: ITool | null = null;
+    private toolName: ToolName | null = null;
 
     /**
      * Creates a ToolManager class that manages tools for the canvas, and applies their functionalities to the layerSystem and drawingManager, and renders the result to canvasManager
      * @constructor
-     * @param events - the event bus that will be used to subscribe to events
-     * @param image - the image data that will be used to draw on
      */
-    constructor(context: Historyable & Drawable) {
-        this.tools = new Map([
-            ["pen", new PenTool(context)],
-        ]);
-        this.selectedTool = this.tools.get("pen");
+    constructor(
+        public serviceConfigs: IServiceConfigurations,
+        public toolConfigs: IToolConfigurations,
+    ) {
+        this.setTool('pencil');
     }
 
-    setDrawingColor(color: Color) {
-        this.drawColor = color;
+    /**
+     * Activates a tool by name
+     */
+    setTool(toolName: ToolName) {
+        this.tool = this.createTool(toolName);
+        this.toolName = toolName;
     }
 
-    setErasingColor(color: Color) {
-        this.eraseColor = color;
+    useTool(event: EditorEvents.UIEvent) {
+        this.tool.handle(event);
     }
 
-    setDrawingSize(size: number) {
-        validateNumber(size, "Size", { start: 1, integerOnly: true });
-        this.drawSize = size;
+    getToolNames(): ToolName[] {
+        return Object.keys(this.toolConfigs) as ToolName[];
     }
 
-    setErasingSize(size: number) {
-        validateNumber(size, "Size", { start: 1, integerOnly: true });
-        this.eraseSize = size;
+    /**
+     * Gets the name of the current tool
+     */
+    get currentToolName(): ToolName | null {
+        return this.toolName;
     }
 
+    private createTool(name: ToolName): ITool {
+        switch (name) {
+            case 'line':
+                return new LineTool({
+                    drawingConfig: this.serviceConfigs.drawing,
+                    lineConfig: this.toolConfigs.line
+                });
+            case 'pencil':
+                return new PencilTool({
+                    drawingConfig: this.serviceConfigs.drawing,
+                    pencilConfig: this.toolConfigs.pencil
+                });
+            case 'eraser':
+                return new EraserTool({
+                    drawingConfig: this.serviceConfigs.drawing,
+                    eraserConfig: this.toolConfigs.eraser
+                });
+            case 'bucket':
+                return new BucketTool({
+                    drawingConfig: this.serviceConfigs.drawing,
+                    bucketConfig: this.toolConfigs.bucket
+                });
+            default:
+                throw new Error(`Tool ${name} does not exist`);
+        }
+    }
 }
-
-// private tolerance: number;
-// private intensity: number;
-// private image: ImageData;
-
-
-// setTolerance(tolerance: number) {
-//     validateNumber(tolerance, "Tolerance", { start: 1, integerOnly: true });
-//     this.tolerance = tolerance;
-// }
-//
-// setIntensity(intensity: number) {
-//     validateNumber(intensity, "Intensity", { start: 1, integerOnly: true });
-//     this.intensity = intensity;
-// }
-//
-// use(event: string, pixelPosition: {x: number, y: number}) {
-//     let metaData;
-//     let command;
-//     switch (this.toolName) {
-//         case "pen":
-//             metaData = {
-//                 size: this.drawSize,
-//                 color: this.drawColor,
-//             };
-//             break;
-//         case "eraser":
-//             metaData = {
-//                 size: this.eraseSize,
-//                 color: this.eraseColor,
-//             };
-//             break;
-//         case "line":
-//             metaData = {
-//                 thicknessTimeFunction: () => this.drawSize,
-//                 color: this.drawColor,
-//             };
-//             break;
-//         case "bucket":
-//             metaData = {
-//                 tolerance: this.tolerance,
-//                 color: this.drawColor,
-//             };
-//             break;
-//     }
-//
-//     switch (event) {
-//         case "start-action":
-//             this.drawingTool.startAction(this.toolName, metaData);
-//             // this.#events.emit("layer:preview", {
-//             //     this.#drawingTool.action(pixelPosition)
-//             // });
-//             this.render(this.drawingTool.action(pixelPosition));
-//             break;
-//         case "move-action":
-//             // this.#events.emit("layer:repreview", {
-//             //     this.#drawingTool.action(pixelPosition)
-//             // });
-//             this.render(this.drawingTool.action(pixelPosition));
-//             break;
-//         case "mousehover":
-//             //this.render(this.#drawingManager.preview(pixelPosition));
-//             break;
-//         case "end-action":
-//             // this.#events.emit("layer:perform", {
-//             //     this.#drawingTool.action(pixelPosition)
-//             // });
-//             //this.render(this.#drawingManager.action(pixelPosition));
-//             // ended action
-//             this.drawingTool.endAction();
-//             break;
-//         case "eye-dropper":
-//             // !!!
-//             break;
-//     }
-// }
-
