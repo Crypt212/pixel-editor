@@ -347,7 +347,9 @@ export default class LayerManager {
 
             finalColor = Color.compositeOver(layerColor, finalColor);
         }
+        const layerColor = this.previewLayer.getColor(x, y);
 
+        finalColor = Color.compositeOver(layerColor, finalColor);
         return finalColor;
     };
 
