@@ -79,14 +79,12 @@ export default abstract class HistorySystem<DataType extends Object> {
      * @param keepFuture - Determines if future records should be kept
      */
     setRecord(data: DataType, keepFuture = false) {
-        let atEnd = this.currentIndex === this.endIndex;
-
         if (this.count === this.capacity)
             this.startIndex = this.normalizedIndex(this.startIndex + 1);
 
         this.currentIndex = this.normalizedIndex(this.currentIndex + 1);
 
-        if (!keepFuture || atEnd)
+        if (!keepFuture || this.atEnd)
             this.endIndex = this.currentIndex;
 
         this.buffer[this.currentIndex] = {
@@ -172,13 +170,19 @@ export default abstract class HistorySystem<DataType extends Object> {
 
     /**
      * Moves backward in history (undo), does nothing if already at start
+     * @param options
+     * @param options.distroyRedo - If true, destroys the redo history
      * @method
      * @returns The record data at the new ID and its offset from start
      * @returns The record data at the offset, retreives it for boundary records if offset is out of bounds
      */
-    undo(): { data: DataType, index: number } {
-        if (this.currentIndex !== this.startIndex)
+    undo(options: { distroyRedo: boolean } = { distroyRedo: false }): { data: DataType, index: number } {
+        if (!this.atStart) {
             this.currentIndex = this.normalizedIndex(this.currentIndex - 1);
+            if (options.distroyRedo)
+                this.endIndex = this.currentIndex;
+
+        }
 
         return {
             data: this.buffer[this.currentIndex].data,
@@ -192,9 +196,8 @@ export default abstract class HistorySystem<DataType extends Object> {
      * @returns The record data at the new ID and its offset from start
      */
     redo(): { data: DataType, index: number } {
-        if (this.currentIndex !== this.startIndex) {
+        if (!this.atEnd)
             this.currentIndex = this.normalizedIndex(this.currentIndex + 1);
-        }
 
         return {
             data: this.buffer[this.currentIndex].data,
