@@ -1,6 +1,7 @@
-import EventBus from "@src/services/event-bus.js";
 import { PixelCoord } from "@src/types/pixel-types.js";
+import { EditorEvents } from "@src/types/ui-events.js";
 import { validateNumber } from "@src/utils/validation.js";
+import { AppEventEmitter } from "@src/core/events.js";
 
 /**
  * Responsible for managing the canvas element inside its container
@@ -17,7 +18,8 @@ export default class Canvas {
 
     private scale: number = 1; // the scale applied by the user on the canvas
 
-    private recentPixelPos: PixelCoord = {x: -1, y: -1};
+    private recentPixelPos: PixelCoord = { x: 0, y: 0 };
+
     //#isDragging = false;
     // private doubleTapThreshold: number = 300; // Time in milliseconds to consider as double tap
     // private tripleTapThreshold: number = 600; // Time in milliseconds to consider as triple tap
@@ -37,7 +39,7 @@ export default class Canvas {
      * @param containerElement - The DOM Element that will contain the canvas
      * @param events - The event bus
      */
-    constructor(containerElement: HTMLElement, events: EventBus) {
+    constructor(containerElement: HTMLElement, events: AppEventEmitter) {
         // Setup canvas element
         this.canvasElement = document.createElement("canvas");
         this.containerElement = containerElement;
@@ -228,46 +230,41 @@ export default class Canvas {
         return this.canvasElement.height;
     }
 
-    setupEvents(events: EventBus) {
-        const emitPointerEvent = (name: string, event: MouseEvent | TouchEvent) => {
-            // if (event.target !== this.canvas) return;
-            event.preventDefault();
-            const canvasRect =
-                this.canvas.getBoundingClientRect();
-            const clientX = ((event as TouchEvent).changedTouches ? (event as TouchEvent).changedTouches[0].clientX : (event as MouseEvent).clientX) - canvasRect.left;
-            const clientY = ((event as TouchEvent).changedTouches ? (event as TouchEvent).changedTouches[0].clientY : (event as MouseEvent).clientY) - canvasRect.top;
+    setupEvents(events: AppEventEmitter) {
+        const emitMouseEvent = (event: MouseEvent, eventName: EditorEvents.MouseEventNames) => {
+            const canvasRect = this.canvas.getBoundingClientRect();
 
-            const coordinates: PixelCoord = this.getPixelPosition(clientX, clientY);
+            const { x, y } =
+                this.getPixelPosition(
+                    ((event as MouseEvent).clientX) - canvasRect.left,
+                    ((event as MouseEvent).clientY) - canvasRect.top
+                );
 
-            if (this.recentPixelPos.x === coordinates.x && this.recentPixelPos.y === coordinates.y && name == "mousemove") return;
-            this.recentPixelPos = coordinates;
-            
-            events.emit(`canvas:${name}`, {
-                clientX: clientX,
-                clientY: clientY,
-                coordinates, 
-                pointerType: ((event as TouchEvent).touches ? "touch" : "mouse"),
-            });
+            if (this.recentPixelPos.x === x && this.recentPixelPos.y === y && eventName == "mousemove") return;
+            this.recentPixelPos = { x, y };
+
+            const editorEvent: EditorEvents.MouseEvent = {
+                type: "mouse",
+                name: eventName,
+                pos: { x, y },
+            };
+
+            events.emit(`canvas:interacted`, { event: editorEvent });
         };
 
+        document.addEventListener("mouseup", (e: MouseEvent) => {
+            e.preventDefault();
+            emitMouseEvent(e, "mouseup");
+        });
+
         this.containerElement.addEventListener("mousedown", (e: MouseEvent) => {
-            emitPointerEvent("mousedown", e);
+            e.preventDefault();
+            emitMouseEvent(e, "mousedown");
         });
 
-        document.addEventListener("mouseup", (e) => {
-            emitPointerEvent("mouseup", e);
-        });
-
-        document.addEventListener("mousemove", (e) => {
-            emitPointerEvent("mousemove", e);
-        });
-
-        document.addEventListener("mouseleave", (e) => {
-            emitPointerEvent("mouseleave", e);
-        });
-
-        document.addEventListener("mouseup", (e) => {
-            emitPointerEvent("mouseup", e);
+        document.addEventListener("mousemove", (e: MouseEvent) => {
+            e.preventDefault();
+            emitMouseEvent(e, "mousemove");
         });
 
 
@@ -305,7 +302,6 @@ export default class Canvas {
         //         // this.#toolManager.use("touchdown - redo", clientX, clientY);
         //         touchCount = 0;
         //     }
-        //     console.log(eventName);
         // });
 
         // ["mouseup", "touchend", "touchcancel"].forEach((eventName) => {
@@ -317,7 +313,6 @@ export default class Canvas {
         //             event.clientX || event.changedTouches[0].clientX;
         //         const clientY =
         //             event.clientY || event.changedTouches[0].clientX;
-        //         console.log(eventName);
         //
         //         // this.#toolManager.use("mouseup", clientX, clientY);
         //     });
@@ -330,7 +325,6 @@ export default class Canvas {
         //         event.clientX || event.changedTouches[0].clientX;
         //     const clientY =
         //         event.clientY || event.changedTouches[0].clientY;
-        //     console.log(eventName);
         //
         //     if (this.#isDrawing);
         //     // this.#toolManager.use("mousedraw", clientX, clientY);
@@ -343,28 +337,16 @@ export default class Canvas {
             const delta = e.deltaY > 0 ? 1.1 : 0.9;
             this.zoom(delta);
 
-            events.emit("canvas:zoom", {
+            events.emit("canvas:zoomed", {
                 delta: delta,
                 centerX: e.clientX,
                 centerY: e.clientY
             });
         });
-        //
-        // window.addEventListener("resize", () => {
-        //     this.canvasElement.refresh(true);
-        // });
 
         document.addEventListener("keydown", (e: KeyboardEvent) => {
-            if (!e.ctrlKey) return;
-
-            if (e.key == "z") events.emit("canvas:undo", { key: e.key });
-            if (e.key == "y") events.emit("canvas:redo", { key: e.key });
-
-            // this.#canvasElement.render(
-            //     this.#layerManager.getRenderImage(
-            //         this.#canvasElement.getCanvasContext,
-            //     ),
-            // );
+            if (e.key == "z" && e.ctrlKey) events.emit("canvas:undone", { key: e.key });
+            if (e.key == "y" && e.ctrlKey) events.emit("canvas:redone", { key: e.key });
         });
     }
 }
