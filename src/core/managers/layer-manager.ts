@@ -1,5 +1,5 @@
 import { validateNumber } from "@src/utils/validation.js";
-import PixelLayer from "../layers/concrete/pixel-layer.js";
+import PixelLayer from "../layers/implementations/pixel-layer.js";
 import { PixelCoord, PixelRectangleBounds } from "@src/types/pixel-types.js";
 import Color from "@src/services/color.js";
 
