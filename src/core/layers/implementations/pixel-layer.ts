@@ -4,14 +4,12 @@ import PixelChanges from "@src/services/pixel-change.js";
 import { validateNumber } from "@src/utils/validation.js";
 import Color from "@src/services/color.js";
 import { HistoryMove, RecordData } from "@src/types/history-types.js";
-import Drawable from "@src/interfaces/drawable.js";
-import Historyable from "@src/interfaces/historyable.js";
 
 /**
  * Represents a canvas grid system
  * @class
  */
-export default class PixelLayer implements Drawable, Historyable {
+export default class PixelLayer {
 
     /**
      * The width of the canvas
@@ -41,7 +39,7 @@ export default class PixelLayer implements Drawable, Historyable {
     /**
      * Buffer logs changes performed on pixels (Ex. color change)
      */
-    private pixelChanges: PixelChanges = new PixelChanges();
+    private changeBuffer: PixelChanges = new PixelChanges();
 
     /**
      * Creates a blank canvas with specified width and height
@@ -69,7 +67,7 @@ export default class PixelLayer implements Drawable, Historyable {
 
         this.layerWidth = width;
         this.layerHeight = height;
-        this.pixelMatrix = new Array( width * height );
+        this.pixelMatrix = new Array(width * height);
         for (let x = 0; x < this.layerWidth; x++) {
             for (let y = 0; y < this.layerHeight; y++) {
                 this.pixelMatrix[x + this.layerWidth * y] = { color: Color.TRANSPARENT };
@@ -108,7 +106,7 @@ export default class PixelLayer implements Drawable, Historyable {
                 let blue = imageData.data[dist + 2];
                 let alpha = imageData.data[dist + 3];
 
-                this.setColor(x, y, Color.get({ rgb: [red, green, blue], alpha: alpha / 255 }), { validate: false });
+                this.drawColor(x, y, Color.get({ rgb: [red, green, blue], alpha: alpha / 255 }), { validate: false });
             }
         }
     }
@@ -156,7 +154,7 @@ export default class PixelLayer implements Drawable, Historyable {
     clear() {
         for (let i = 0; i < this.layerHeight; i++) {
             for (let j = 0; j < this.layerWidth; j++) {
-                this.setColor(j, i, Color.TRANSPARENT, { validate: false });
+                this.drawColor(j, i, Color.TRANSPARENT, { validate: false });
             }
         }
     }
@@ -167,8 +165,8 @@ export default class PixelLayer implements Drawable, Historyable {
      * @returns Change buffer before emptying
      */
     resetChangeBuffer(): PixelChanges {
-        const changeBuffer = this.pixelChanges;
-        this.pixelChanges = new PixelChanges();
+        const changeBuffer = this.changeBuffer;
+        this.changeBuffer = new PixelChanges();
         return changeBuffer;
     }
 
@@ -199,12 +197,12 @@ export default class PixelLayer implements Drawable, Historyable {
 
         const record = this.history.getRecordData();
 
-        if (this.pixelChanges.isEmpty) return this.pixelChanges.clone();
+        if (this.changeBuffer.isEmpty) return this.changeBuffer.clone();
 
-        if (record.steps.length === 10 || this.pixelChanges.count >= 100)
+        if (record.steps.length === 10 || this.changeBuffer.count >= 100)
             compressActionSteps(record);
 
-        this.history.getRecordData().steps.push(this.pixelChanges);
+        this.history.getRecordData().steps.push(this.changeBuffer);
 
         return this.resetChangeBuffer();
     }
@@ -215,6 +213,8 @@ export default class PixelLayer implements Drawable, Historyable {
      */
     endAction() {
         if (!this.isInAction) return;
+        this.commitStep();
+        if (this.history.getRecordData().steps.length === 0 && this.history.getRecordData().change.isEmpty) this.history.undo({distroyRedo: true});
         this.inAction = false;
     }
 
@@ -224,8 +224,8 @@ export default class PixelLayer implements Drawable, Historyable {
      */
     cancelAction() {
         if (!this.isInAction) return;
-        this.endAction();
-        this.undo();
+        if (this.history.getRecordData().steps.length === 0 && this.history.getRecordData().change.isEmpty) this.history.undo({distroyRedo: true});
+        this.inAction = false;
     }
 
     /**
@@ -237,9 +237,9 @@ export default class PixelLayer implements Drawable, Historyable {
 
         if (this.history.atStart) return;
 
-        this.history.undo();
-
         this.applyRecord(HistoryMove.Backward);
+
+        this.history.undo();
     }
 
     /**
@@ -270,7 +270,7 @@ export default class PixelLayer implements Drawable, Historyable {
             compressActionSteps(record);
 
         for (const change of record.change)
-            this.setColor(change.key.x, change.key.y, change.states[state].color, { quietly: true, validate: false });
+            this.drawColor(change.key.x, change.key.y, change.states[state].color, { quietly: true, validate: false });
     }
 
     /**
@@ -286,7 +286,7 @@ export default class PixelLayer implements Drawable, Historyable {
      * @throws {RangeError} If validate is true and if x and y are not in valid range.
      * @throws {Error} If not quiet when no action is active
      */
-    setColor(x: number, y: number, color: Color, { quietly = false, validate = true } = {}) {
+    drawColor(x: number, y: number, color: Color, { quietly = false, validate = true } = {}) {
         if (validate) {
             validateNumber(x, "x", { start: 0, end: this.layerWidth - 1, integerOnly: true });
             validateNumber(y, "y", { start: 0, end: this.layerHeight - 1, integerOnly: true });
@@ -299,7 +299,7 @@ export default class PixelLayer implements Drawable, Historyable {
             const newColor: Color = color, oldColor = this.pixelMatrix[x + y * this.layerWidth].color;
 
             if (!Color.isEqualTo(this.pixelMatrix[x + y * this.layerWidth].color, color)) {
-                this.pixelChanges.setChange(
+                this.changeBuffer.setChange(
                     { x, y },
                     { color: newColor },
                     { color: oldColor })
@@ -340,9 +340,9 @@ export default class PixelLayer implements Drawable, Historyable {
      * @method
      * @returns Copy of change buffer
      */
-    get changeBuffer(): PixelChanges {
+    get changes(): PixelChanges {
         return this
-            .pixelChanges.clone();
+            .changeBuffer.clone();
     }
 
     /**
