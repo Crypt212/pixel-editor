@@ -2,8 +2,9 @@ import { defineConfig } from 'vite'
 import path from 'path'
 
 export default defineConfig({
+  base: '/pixelaria/',
   build: {
-    outDir: 'build',
+    outDir: 'dist', // Standardize on 'dist'
     emptyOutDir: true,
     rollupOptions: {
       input: {

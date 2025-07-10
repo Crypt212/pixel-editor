@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Important for GH Pages action
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -28,7 +28,12 @@ jobs:
         run: npm ci
 
       - name: Build project
-        run: npm run build
+        run: npm run full-build
+
+      - name: Verify build output
+        run: |
+          ls -la dist/
+          [ -f dist/index.html ] || exit 1
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -36,7 +41,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dest'
+          path: './dist'
 
       - name: Deploy to GitHub Pages
         id: deployment

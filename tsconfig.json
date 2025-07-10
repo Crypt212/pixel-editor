@@ -1,22 +1,18 @@
 {
-    "compilerOptions": {
-        "moduleResolution": "node16",
-        "jsx": "preserve",
-        "esModuleInterop": true,
-        "target": "ES2022",
-        "outDir": "dest",
-        "rootDir": "src",
-        "baseUrl": ".",
-        "module": "node16",
-        "noEmitOnError": true,
-        "sourceMap": true,
-        "paths": {
-            "@src/*": [
-                "./src/*"
-            ]
-        }
-    },
-    "include": [
-        "src/**/*"
-    ]
+  "compilerOptions": {
+    "moduleResolution": "node16",
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "target": "ES2022",
+    "outDir": "dist", // Match Vite's output directory
+    "rootDir": "src",
+    "baseUrl": ".",
+    "module": "node16",
+    "noEmitOnError": true,
+    "sourceMap": true,
+    "paths": {
+      "@src/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*"]
 }

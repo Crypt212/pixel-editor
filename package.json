@@ -16,12 +16,14 @@
   "dependencies": {
     "node-ts": "^8.0.6"
   },
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "test": "jest --verbose"
-  },
+"scripts": {
+  "dev": "vite",
+  "build": "tsc && vite build",
+  "preview": "vite preview",
+  "test": "jest --verbose",
+  "clean": "rm -rf dist/",
+  "full-build": "npm run clean && npm run build"
+},
   "jest": {
     "collectCoverage": true,
     "coverageReporters": [
