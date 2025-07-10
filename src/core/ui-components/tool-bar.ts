@@ -14,7 +14,7 @@ export default class ToolBar {
     }
 
     addTool(name: ToolName) {
-        const iconPath = `assets/icons/${name}-tool.png`;
+        const iconPath = new URL(`/assets/icons/${name}-tool.png`, import.meta.url).href;
         let element: HTMLElement = document.createElement("div");
         element.classList.add("tool");
         element.classList.add("btn");
