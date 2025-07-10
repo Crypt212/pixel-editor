@@ -17,8 +17,6 @@ board.render();
 
 // Click on index colors
 
-const toolsElem = document.getElementsByClassName("tools")[0];
-
 // function downloadCanvasAsPNG() {
 //     const canvas: S = document.getElementById("canvas");
 //     const link = document.createElement("a");
