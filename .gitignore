@@ -4,6 +4,6 @@ logs
 *.log
 
 coverage/
-dest/
+dist/
 build/
 
