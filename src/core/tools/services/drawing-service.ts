@@ -177,13 +177,11 @@ export class DrawingService extends ToolService<IDrawingConfig> {
 
                     if (this.mode === "preview") {
                         this.revertAction();
-                        this.mode = "preview";
                         this.unsetPosition();
                     }
                     this.mode = "draw";
 
                     this.startAction(actionName);
-
                     this.setPosition(mouseEvent.pos);
 
                     clickAction()
@@ -205,7 +203,6 @@ export class DrawingService extends ToolService<IDrawingConfig> {
                         this.setPosition(mouseEvent.pos);
 
                         movePreviewAction();
-
                         this.mode = "preview";
 
                         this.stepAction();
@@ -216,6 +213,7 @@ export class DrawingService extends ToolService<IDrawingConfig> {
 
                         if (redraw)
                             this.restartAction();
+
                         this.setPosition(mouseEvent.pos);
 
                         moveDrawAction();
@@ -229,7 +227,6 @@ export class DrawingService extends ToolService<IDrawingConfig> {
                 case "mouseup":
                     if (this.stage !== "draw") return;
 
-                    this.mode = "draw";
                     if (redraw)
                         this.restartAction();
                     this.setPosition(mouseEvent.pos);
