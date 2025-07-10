@@ -3,7 +3,7 @@ import { PixelState } from "@src/types/pixel-types.js";
 import PixelChanges from "@src/services/pixel-change.js";
 import { validateNumber } from "@src/utils/validation.js";
 import Color from "@src/services/color.js";
-import { HistoryMove, RecordData } from "@src/types/history-types.js";
+import { HistoryMove, RecordData } from "@src/types/history-types.d.js";
 
 /**
  * Represents a canvas grid system
@@ -208,23 +208,23 @@ export default class PixelLayer {
     }
 
     /**
-     * Ends the current action in the history
+     * Commits and ends the current action in history, discards it if empty
      * @method
      */
     endAction() {
         if (!this.isInAction) return;
         this.commitStep();
-        if (this.history.getRecordData().steps.length === 0 && this.history.getRecordData().change.isEmpty) this.history.undo({distroyRedo: true});
+        if (this.history.getRecordData().steps.length === 0 && this.history.getRecordData().change.isEmpty) this.history.undo({ distroyRedo: true });
         this.inAction = false;
     }
 
     /**
-     * Cancels the current action in the history
+     * Cancels the current action and discards it from history
      * @method
      */
     cancelAction() {
         if (!this.isInAction) return;
-        if (this.history.getRecordData().steps.length === 0 && this.history.getRecordData().change.isEmpty) this.history.undo({distroyRedo: true});
+        this.history.undo({ distroyRedo: true });
         this.inAction = false;
     }
 
@@ -233,13 +233,15 @@ export default class PixelLayer {
      * @method
      */
     undo() {
-        this.cancelAction();
-
         if (this.history.atStart) return;
 
         this.applyRecord(HistoryMove.Backward);
 
-        this.history.undo();
+        if (this.isInAction) {
+            this.cancelAction();
+        } else {
+            this.history.undo();
+        }
     }
 
     /**
@@ -247,9 +249,7 @@ export default class PixelLayer {
      * @method
      */
     redo() {
-        this.cancelAction();
-
-        if (this.history.atEnd) return;
+        if (this.history.atEnd || this.isInAction) return;
 
         this.history.redo();
 
