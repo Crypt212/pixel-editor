@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "target": "ES2022",
-        "outDir": "dist",
+        "outDir": "dest",
         "rootDir": "src",
         "module": "node16",
         "noEmitOnError": true,

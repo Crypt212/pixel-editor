@@ -4,4 +4,4 @@ logs
 *.log
 
 coverage/
-dist/
+dest/
