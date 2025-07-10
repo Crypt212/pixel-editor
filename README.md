@@ -1,5 +1,5 @@
-# Pixel Editor  
-**[🚀 Live Demo](https://crypt212.github.io/pixel-editor/)**
+# Pixelaria
+**[🚀 Live Demo](https://crypt212.github.io/pixelaria/)**
 
 A simple pixel editor web application that allows users to create and edit pixel art using a grid-based interface. This application is under development.
 
@@ -16,23 +16,42 @@ A simple pixel editor web application that allows users to create and edit pixel
 
 ## Overview
 
-This project aims to provide a user-friendly interface for creating pixel art, with features such as undo/redo functionality, color selection, and pixel manipulation. The application has been refactored to improve modularity and maintainability by introducing several manager classes:
+![Alt drawing](https://media.giphy.com/media/kzYVkVeXPIl7dRSLnN/giphy.gif)
+![Alt erasing](https://media.giphy.com/media/TQjr3VtD4pgttsJY57/giphy.gif)
+![Alt filling](https://media.giphy.com/media/q59VyPECMBzb9uJJ2Z/giphy.gif)
 
-- **CanvasManager**: Manages the canvas element and its properties.
-- **DrawingManager**: Handles drawing operations and pixel manipulations.
-- **EventManager**: Manages user interactions and events for the pixel editor.
+This project aims to provide a user-friendly interface for creating pixel art, with features such as undo/redo functionality, color selection, pixel manipulation and basic tools (pencil, eraser, line, bucket). The application has been refactored to improve modularity, maintainability and scalability by introducing:
+
+### Managers
 - **ToolManager**: Oversees tool functionalities and interactions.
+- **LayerManager**: Manages layers and their properties (Will be supported for UI soon).
 
-The `HistorySystem` module is implemented to manage the undo and redo actions.
+### Generic Systems
+- **HistorySystem**: Manages records in history buffer for undo/redo operations.
+- **ChangeSystem**: Manages and records changes done to a collection of data, storing it before and after states.
+
+### General Services
+- **Color**: Manages and caches all used colors in application, and provide color manipulation utilities.
+- **EventEmitter**: Manages interactions between UI components and the application core logic.
+- **PixelChange**: Specification of ChangeSystem class for pixel manipulation.
+
+### Tools
+- **ToolService**: Manages services for tools. Composing various tools from collections of services allowing scalability.
+- **ServiceConfig**: Manages configuration of tool services.
+
+### UI Components
+- Allowiing interactions with the core logic.
+
 
 ## Current Status  
 - ✅ Robust undo/redo system 
-- 🚧 Core drawing tools implemented *(in progress)*
-    - finished: pencil, eraser, line, bucket
-    - in progress: color picker, area selection, magic wand
+- ✅ scalable tool interfaces and services
+- ✅ basic tools: pencil, eraser, line, bucket
+- ✅ random
 - 🚧 Layers *(in progress)*  
 
 ## Planned Features 
+- color picker, area selection, magic wand
 - Export to GIF
 - Editiable color palletes
 - Responsive design
@@ -40,12 +59,9 @@ The `HistorySystem` module is implemented to manage the undo and redo actions.
 ## Recent Improvements
 
 ### Performance Optimizations (v0.5)
-- 🚀 Undo/redo system now handles 1000-step actions 5x faster (384ms → 65ms)
-- 🧹 Reduced memory usage by 30% in history operations
-
-### Core Enhancements
-- Refactored to modular architecture (CanvasManager, ToolManager, etc.)
-- Implemented robust history system with merge optimization
+- Undo/redo system now handles 1000-step actions 5x faster (384ms → 65ms)
+- Caching pixel changes and used colors, reducing memory usage by 30%
+- Reduced memory usage by 30% in history operations
 
 ## Installation
 
@@ -53,15 +69,20 @@ To run the pixel editor locally, follow these steps:
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/Crypt212/pixel-editor.git
+    git clone https://github.com/Crypt212/pixelaria.git
     ```
 
-2. Navigate to the project directory:
+2. Build the project:
     ```bash
-    cd pixel-editor
+    cd pixelaria
+    npm install
+    npm run build
     ```
 
-3. Open `index.html` in your web browser.
+3. Preview:
+    ```bash
+    npm run preview
+    ```
 
 ## Running Tests
 
@@ -69,6 +90,8 @@ To run the tests for the pixel editor locally, follow these steps:
 ```bash
     npm test
 ```
+
+*Note: Project still in development and tests are under construction.*
 
 ## License
 

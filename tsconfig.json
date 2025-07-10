@@ -1,8 +1,12 @@
 {
     "compilerOptions": {
+        "moduleResolution": "node16",
+        "jsx": "preserve",
+        "esModuleInterop": true,
         "target": "ES2022",
         "outDir": "dest",
         "rootDir": "src",
+        "baseUrl": ".",
         "module": "node16",
         "noEmitOnError": true,
         "sourceMap": true,
@@ -11,5 +15,8 @@
                 "./src/*"
             ]
         }
-    }
+    },
+    "include": [
+        "src/**/*"
+    ]
 }

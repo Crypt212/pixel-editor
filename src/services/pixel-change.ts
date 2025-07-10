@@ -1,4 +1,4 @@
-import ChangeSystem, { ChangeState } from "@src/generics/change-tracker.js";
+import ChangeSystem, { ChangeState } from "@src/generics/change-system.js";
 import { PixelCoord, PixelRectangleBounds, PixelState } from "@src/types/pixel-types.js";
 import Color from "@src/services/color.js";
 
