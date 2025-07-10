@@ -188,7 +188,7 @@ class Color {
         const newAlpha: number = color1.data.alpha + (color2.data.alpha - color1.data.alpha) * weight;
 
         switch (mode) {
-            case ColorSpace.rgb:
+            case ColorSpace.hsl:
                 const [h1, s1, l1] = color1.data.hsl;
                 const [h2, s2, l2] = color2.data.hsl;
 
